@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorWasmHosted.Client\BlazorWasmHosted.Client.csproj" />
+    <ProjectReference Include="..\BlazorWasmHosted.Shared\BlazorWasmHosted.Shared.csproj" />
+    <ProjectReference Include="..\BlazorWasmHosted.Data\BlazorWasmHosted.Data.csproj" />
+    <ProjectReference Include="..\BlazorWasmHosted.Services\BlazorWasmHosted.Services.csproj" />
+  </ItemGroup>
+
+</Project>
