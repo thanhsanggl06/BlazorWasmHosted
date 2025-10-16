@@ -1,0 +1,521 @@
+﻿<div class="@GetBoxClass()" style="@GetBoxStyle()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// 子コンテンツ
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    #region Spacing - マージン・パディング
+
+    /// <summary>
+    /// マージン（全方向） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? M { get; set; }
+
+    /// <summary>
+    /// マージン上 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Mt { get; set; }
+
+    /// <summary>
+    /// マージン右 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Mr { get; set; }
+
+    /// <summary>
+    /// マージン下 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Mb { get; set; }
+
+    /// <summary>
+    /// マージン左 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Ml { get; set; }
+
+    /// <summary>
+    /// マージン横（左右） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Mx { get; set; }
+
+    /// <summary>
+    /// マージン縦（上下） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? My { get; set; }
+
+    /// <summary>
+    /// パディング（全方向） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? P { get; set; }
+
+    /// <summary>
+    /// パディング上 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Pt { get; set; }
+
+    /// <summary>
+    /// パディング右 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Pr { get; set; }
+
+    /// <summary>
+    /// パディング下 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Pb { get; set; }
+
+    /// <summary>
+    /// パディング左 (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Pl { get; set; }
+
+    /// <summary>
+    /// パディング横（左右） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Px { get; set; }
+
+    /// <summary>
+    /// パディング縦（上下） (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Py { get; set; }
+
+    #endregion
+
+    #region Display - 表示設定
+
+    /// <summary>
+    /// Display属性 (none, inline, block, flex, grid等)
+    /// </summary>
+    [Parameter]
+    public string? Display { get; set; }
+
+    #endregion
+
+    #region Flexbox - フレックスボックス
+
+    /// <summary>
+    /// Flexコンテンツの配置（横） (start, center, end, between, around, evenly)
+    /// </summary>
+    [Parameter]
+    public string? JustifyContent { get; set; }
+
+    /// <summary>
+    /// Flexアイテムの配置（縦） (start, center, end, baseline, stretch)
+    /// </summary>
+    [Parameter]
+    public string? AlignItems { get; set; }
+
+    /// <summary>
+    /// Flexの方向 (row, column, row-reverse, column-reverse)
+    /// </summary>
+    [Parameter]
+    public string? FlexDirection { get; set; }
+
+    /// <summary>
+    /// Flexの折り返し (wrap, nowrap, wrap-reverse)
+    /// </summary>
+    [Parameter]
+    public string? FlexWrap { get; set; }
+
+    /// <summary>
+    /// Flex伸縮率
+    /// </summary>
+    [Parameter]
+    public int? Flex { get; set; }
+
+    /// <summary>
+    /// Flexアイテム間のギャップ (0-5)
+    /// </summary>
+    [Parameter]
+    public int? Gap { get; set; }
+
+    #endregion
+
+    #region Sizing - サイズ設定
+
+    /// <summary>
+    /// 幅 (例: "100%", "300px", "50vw")
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>
+    /// 高さ (例: "100%", "200px", "50vh")
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// 最小幅
+    /// </summary>
+    [Parameter]
+    public string? MinWidth { get; set; }
+
+    /// <summary>
+    /// 最小高さ
+    /// </summary>
+    [Parameter]
+    public string? MinHeight { get; set; }
+
+    /// <summary>
+    /// 最大幅
+    /// </summary>
+    [Parameter]
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
+    /// 最大高さ
+    /// </summary>
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    #endregion
+
+    #region Colors - 色設定
+
+    /// <summary>
+    /// 背景色 (primary, secondary, success, danger, warning, info, light, dark, white等)
+    /// </summary>
+    [Parameter]
+    public string? Bg { get; set; }
+
+    /// <summary>
+    /// テキスト色 (primary, secondary, success, danger, warning, info, light, dark, white等)
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    #endregion
+
+    #region Border - ボーダー設定
+
+    /// <summary>
+    /// ボーダーを表示するか
+    /// </summary>
+    [Parameter]
+    public bool Border { get; set; } = false;
+
+    /// <summary>
+    /// ボーダー色 (Bootstrapカラー)
+    /// </summary>
+    [Parameter]
+    public string? BorderColor { get; set; }
+
+    /// <summary>
+    /// ボーダー角丸 (0-5, またはpill, circle)
+    /// </summary>
+    [Parameter]
+    public int? BorderRadius { get; set; }
+
+    #endregion
+
+    #region Position - 位置設定
+
+    /// <summary>
+    /// Position属性 (static, relative, absolute, fixed, sticky)
+    /// </summary>
+    [Parameter]
+    public string? Position { get; set; }
+
+    /// <summary>
+    /// 上からのオフセット
+    /// </summary>
+    [Parameter]
+    public string? Top { get; set; }
+
+    /// <summary>
+    /// 右からのオフセット
+    /// </summary>
+    [Parameter]
+    public string? Right { get; set; }
+
+    /// <summary>
+    /// 下からのオフセット
+    /// </summary>
+    [Parameter]
+    public string? Bottom { get; set; }
+
+    /// <summary>
+    /// 左からのオフセット
+    /// </summary>
+    [Parameter]
+    public string? Left { get; set; }
+
+    #endregion
+
+    #region Overflow - オーバーフロー設定
+
+    /// <summary>
+    /// オーバーフロー処理 (auto, hidden, visible, scroll)
+    /// </summary>
+    [Parameter]
+    public string? Overflow { get; set; }
+
+    /// <summary>
+    /// 横方向のオーバーフロー処理
+    /// </summary>
+    [Parameter]
+    public string? OverflowX { get; set; }
+
+    /// <summary>
+    /// 縦方向のオーバーフロー処理
+    /// </summary>
+    [Parameter]
+    public string? OverflowY { get; set; }
+
+    #endregion
+
+    #region Text - テキスト設定
+
+    /// <summary>
+    /// テキスト配置 (start, center, end)
+    /// </summary>
+    [Parameter]
+    public string? TextAlign { get; set; }
+
+    /// <summary>
+    /// フォント太さ (light, normal, bold, bolder)
+    /// </summary>
+    [Parameter]
+    public string? FontWeight { get; set; }
+
+    /// <summary>
+    /// フォントサイズ (例: "14px", "1.2rem")
+    /// </summary>
+    [Parameter]
+    public string? FontSize { get; set; }
+
+    #endregion
+
+    #region Other - その他
+
+    /// <summary>
+    /// ボックスシャドウ (sm, default, lg)
+    /// </summary>
+    [Parameter]
+    public string? Shadow { get; set; }
+
+    /// <summary>
+    /// 追加のCSSクラス
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// インラインスタイル
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// その他の属性
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    #endregion
+
+    private string GetBoxClass()
+    {
+        var classes = new List<string>();
+
+        // Spacing - Margin
+        if (M.HasValue) classes.Add($"m-{M}");
+        if (Mt.HasValue) classes.Add($"mt-{Mt}");
+        if (Mr.HasValue) classes.Add($"me-{Mr}");
+        if (Mb.HasValue) classes.Add($"mb-{Mb}");
+        if (Ml.HasValue) classes.Add($"ms-{Ml}");
+        if (Mx.HasValue) classes.Add($"mx-{Mx}");
+        if (My.HasValue) classes.Add($"my-{My}");
+
+        // Spacing - Padding
+        if (P.HasValue) classes.Add($"p-{P}");
+        if (Pt.HasValue) classes.Add($"pt-{Pt}");
+        if (Pr.HasValue) classes.Add($"pe-{Pr}");
+        if (Pb.HasValue) classes.Add($"pb-{Pb}");
+        if (Pl.HasValue) classes.Add($"ps-{Pl}");
+        if (Px.HasValue) classes.Add($"px-{Px}");
+        if (Py.HasValue) classes.Add($"py-{Py}");
+
+        // Display
+        if (!string.IsNullOrEmpty(Display))
+        {
+            classes.Add($"d-{Display}");
+        }
+
+        // Flexbox
+        if (!string.IsNullOrEmpty(JustifyContent))
+        {
+            classes.Add($"justify-content-{JustifyContent}");
+        }
+        if (!string.IsNullOrEmpty(AlignItems))
+        {
+            classes.Add($"align-items-{AlignItems}");
+        }
+        if (!string.IsNullOrEmpty(FlexDirection))
+        {
+            classes.Add($"flex-{FlexDirection}");
+        }
+        if (!string.IsNullOrEmpty(FlexWrap))
+        {
+            classes.Add($"flex-{FlexWrap}");
+        }
+        if (Gap.HasValue)
+        {
+            classes.Add($"gap-{Gap}");
+        }
+
+        // Colors
+        if (!string.IsNullOrEmpty(Bg))
+        {
+            classes.Add($"bg-{Bg}");
+        }
+        if (!string.IsNullOrEmpty(Color))
+        {
+            classes.Add($"text-{Color}");
+        }
+
+        // Border
+        if (Border)
+        {
+            classes.Add("border");
+        }
+        if (!string.IsNullOrEmpty(BorderColor))
+        {
+            classes.Add($"border-{BorderColor}");
+        }
+        if (BorderRadius.HasValue)
+        {
+            classes.Add($"rounded-{BorderRadius}");
+        }
+
+        // Position
+        if (!string.IsNullOrEmpty(Position))
+        {
+            classes.Add($"position-{Position}");
+        }
+
+        // Overflow
+        if (!string.IsNullOrEmpty(Overflow))
+        {
+            classes.Add($"overflow-{Overflow}");
+        }
+
+        // Text
+        if (!string.IsNullOrEmpty(TextAlign))
+        {
+            classes.Add($"text-{TextAlign}");
+        }
+        if (!string.IsNullOrEmpty(FontWeight))
+        {
+            classes.Add($"fw-{FontWeight}");
+        }
+
+        // Shadow
+        if (!string.IsNullOrEmpty(Shadow))
+        {
+            classes.Add(Shadow == "default" ? "shadow" : $"shadow-{Shadow}");
+        }
+
+        if (!string.IsNullOrEmpty(Class))
+        {
+            classes.Add(Class);
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string? GetBoxStyle()
+    {
+        var styles = new List<string>();
+
+        // Width/Height
+        if (!string.IsNullOrEmpty(Width))
+        {
+            styles.Add($"width: {Width}");
+        }
+        if (!string.IsNullOrEmpty(Height))
+        {
+            styles.Add($"height: {Height}");
+        }
+        if (!string.IsNullOrEmpty(MinWidth))
+        {
+            styles.Add($"min-width: {MinWidth}");
+        }
+        if (!string.IsNullOrEmpty(MinHeight))
+        {
+            styles.Add($"min-height: {MinHeight}");
+        }
+        if (!string.IsNullOrEmpty(MaxWidth))
+        {
+            styles.Add($"max-width: {MaxWidth}");
+        }
+        if (!string.IsNullOrEmpty(MaxHeight))
+        {
+            styles.Add($"max-height: {MaxHeight}");
+        }
+
+        // Flex
+        if (Flex.HasValue)
+        {
+            styles.Add($"flex: {Flex}");
+        }
+
+        // Position
+        if (!string.IsNullOrEmpty(Top))
+        {
+            styles.Add($"top: {Top}");
+        }
+        if (!string.IsNullOrEmpty(Right))
+        {
+            styles.Add($"right: {Right}");
+        }
+        if (!string.IsNullOrEmpty(Bottom))
+        {
+            styles.Add($"bottom: {Bottom}");
+        }
+        if (!string.IsNullOrEmpty(Left))
+        {
+            styles.Add($"left: {Left}");
+        }
+
+        // Overflow
+        if (!string.IsNullOrEmpty(OverflowX))
+        {
+            styles.Add($"overflow-x: {OverflowX}");
+        }
+        if (!string.IsNullOrEmpty(OverflowY))
+        {
+            styles.Add($"overflow-y: {OverflowY}");
+        }
+
+        // Font Size
+        if (!string.IsNullOrEmpty(FontSize))
+        {
+            styles.Add($"font-size: {FontSize}");
+        }
+
+        if (!string.IsNullOrEmpty(Style))
+        {
+            styles.Add(Style);
+        }
+
+        return styles.Count > 0 ? string.Join("; ", styles) : null;
+    }
+}

@@ -1,13 +1,13 @@
-﻿{
+{
   "profiles": {
     "BlazorWasmHosted.Server": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5000"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -16,6 +16,14 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "sslPort": 0
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:50835/",
+      "sslPort": 44325
     }
   }
 }

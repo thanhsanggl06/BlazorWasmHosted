@@ -1,0 +1,18 @@
+@page "/js-interop"
+@inject IJSRuntime JS
+
+<PageTitle>JS Interop</PageTitle>
+
+<button class="btn btn-success" @onclick="ShowAlertAsync">Alert via JS</button>
+<button class="btn btn-outline-primary ms-2" @onclick="GetNowAsync">Get time from JS</button>
+<p class="mt-2">JS time: @jsTime</p>
+
+@code {
+    private string? jsTime;
+
+    private async Task ShowAlertAsync()
+        => await JS.InvokeVoidAsync("alert", "Hello from Blazor!");
+
+    private async Task GetNowAsync()
+        => jsTime = await JS.InvokeAsync<string>("eval", "new Date().toLocaleTimeString()")!;
+}

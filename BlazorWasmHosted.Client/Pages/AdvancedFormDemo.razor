@@ -1,0 +1,272 @@
+@page "/advanced-form"
+@using System.ComponentModel.DataAnnotations
+@using BlazorWasmHosted.Components.Components.Core
+
+<PageTitle>Advanced Form with Core Components</PageTitle>
+
+<Container MaxWidth="lg" Class="py-4">
+    <Box Mb="4" TextAlign="center">
+        <h1 class="display-4">User Registration Form</h1>
+        <p class="lead">Demo form using Core Components (Box, Stack, Grid, Container)</p>
+    </Box>
+
+    <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        
+        <!-- Form Card -->
+        <Box Bg="white" Border="true" BorderRadius="3" Shadow="default" P="4" Mb="4">
+            <Stack Direction="column" Spacing="4">
+                <!-- Personal Information Section -->
+                <Box>
+                    <h4 class="mb-3">Personal Information</h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">First Name *</label>
+                                <InputText class="form-control" @bind-Value="model.FirstName" placeholder="Enter first name" />
+                                <ValidationMessage For="() => model.FirstName" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Last Name *</label>
+                                <InputText class="form-control" @bind-Value="model.LastName" placeholder="Enter last name" />
+                                <ValidationMessage For="() => model.LastName" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Email *</label>
+                                <InputText type="email" class="form-control" @bind-Value="model.Email" placeholder="your@email.com" />
+                                <ValidationMessage For="() => model.Email" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <InputText type="tel" class="form-control" @bind-Value="model.PhoneNumber" placeholder="+84 123 456 789" />
+                                <ValidationMessage For="() => model.PhoneNumber" />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Address Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">Address</h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Street Address *</label>
+                                <InputText class="form-control" @bind-Value="model.Address" placeholder="123 Main Street" />
+                                <ValidationMessage For="() => model.Address" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">City *</label>
+                                <InputText class="form-control" @bind-Value="model.City" placeholder="Ho Chi Minh" />
+                                <ValidationMessage For="() => model.City" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Postal Code</label>
+                                <InputText class="form-control" @bind-Value="model.PostalCode" placeholder="700000" />
+                                <ValidationMessage For="() => model.PostalCode" />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Additional Info Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">Additional Information</h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Age *</label>
+                                <InputNumber class="form-control" @bind-Value="model.Age" />
+                                <ValidationMessage For="() => model.Age" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Gender</label>
+                                <InputSelect class="form-select" @bind-Value="model.Gender">
+                                    <option value="">-- Select --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => model.Gender" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Date of Birth</label>
+                                <InputDate class="form-control" @bind-Value="model.DateOfBirth" />
+                                <ValidationMessage For="() => model.DateOfBirth" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Bio</label>
+                                <InputTextArea class="form-control" rows="4" @bind-Value="model.Bio" placeholder="Tell us about yourself..." />
+                                <ValidationMessage For="() => model.Bio" />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Preferences Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">Preferences</h4>
+                    <Stack Direction="column" Spacing="3">
+                        <Box Display="flex" AlignItems="center" Gap="2">
+                            <InputCheckbox id="newsletter" @bind-Value="model.SubscribeNewsletter" class="form-check-input" />
+                            <label for="newsletter" class="form-check-label">Subscribe to newsletter</label>
+                        </Box>
+                        
+                        <Box Display="flex" AlignItems="center" Gap="2">
+                            <InputCheckbox id="terms" @bind-Value="model.AcceptTerms" class="form-check-input" />
+                            <label for="terms" class="form-check-label fw-bold">I accept the terms and conditions *</label>
+                        </Box>
+                        <ValidationMessage For="() => model.AcceptTerms" />
+                    </Stack>
+                </Box>
+
+                <!-- Form Actions -->
+                <Box Display="flex" JustifyContent="end" Gap="3" Pt="3">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Submit Registration
+                    </button>
+                </Box>
+            </Stack>
+        </Box>
+    </EditForm>
+
+    <!-- Success Message -->
+    @if (submitted)
+    {
+        <Box Bg="success" Color="white" Border="true" BorderColor="success" BorderRadius="3" P="4" Mb="3">
+            <Stack Direction="column" Spacing="2">
+                <h4><i class="bi bi-check-circle-fill"></i> Registration Successful!</h4>
+                <Box>
+                    <p class="mb-2"><strong>Name:</strong> @model.FirstName @model.LastName</p>
+                    <p class="mb-2"><strong>Email:</strong> @model.Email</p>
+                    <p class="mb-2"><strong>Phone:</strong> @model.PhoneNumber</p>
+                    <p class="mb-2"><strong>Address:</strong> @model.Address, @model.City @model.PostalCode</p>
+                    <p class="mb-2"><strong>Age:</strong> @model.Age</p>
+                    <p class="mb-2"><strong>Gender:</strong> @model.Gender</p>
+                    <p class="mb-2"><strong>Date of Birth:</strong> @model.DateOfBirth?.ToString("dd/MM/yyyy")</p>
+                    <p class="mb-2"><strong>Newsletter:</strong> @(model.SubscribeNewsletter ? "Yes" : "No")</p>
+                    @if (!string.IsNullOrEmpty(model.Bio))
+                    {
+                        <p class="mb-0"><strong>Bio:</strong> @model.Bio</p>
+                    }
+                </Box>
+            </Stack>
+        </Box>
+    }
+
+    <!-- Component Info -->
+    <Box Bg="light" Border="true" BorderRadius="2" P="3" Mt="4">
+        <h5 class="mb-3">Core Components Used:</h5>
+        <Grid Container="true" Spacing="2">
+            <Grid Item="true" Xs="12" Sm="6" Md="3">
+                <Box Bg="white" Border="true" BorderRadius="2" P="2" TextAlign="center">
+                    <code class="text-primary">&lt;Container&gt;</code>
+                    <small class="d-block text-muted mt-1">Responsive container</small>
+                </Box>
+            </Grid>
+            <Grid Item="true" Xs="12" Sm="6" Md="3">
+                <Box Bg="white" Border="true" BorderRadius="2" P="2" TextAlign="center">
+                    <code class="text-primary">&lt;Box&gt;</code>
+                    <small class="d-block text-muted mt-1">Flexible wrapper</small>
+                </Box>
+            </Grid>
+            <Grid Item="true" Xs="12" Sm="6" Md="3">
+                <Box Bg="white" Border="true" BorderRadius="2" P="2" TextAlign="center">
+                    <code class="text-primary">&lt;Stack&gt;</code>
+                    <small class="d-block text-muted mt-1">Vertical/Horizontal layout</small>
+                </Box>
+            </Grid>
+            <Grid Item="true" Xs="12" Sm="6" Md="3">
+                <Box Bg="white" Border="true" BorderRadius="2" P="2" TextAlign="center">
+                    <code class="text-primary">&lt;Grid&gt;</code>
+                    <small class="d-block text-muted mt-1">Responsive grid</small>
+                </Box>
+            </Grid>
+        </Grid>
+    </Box>
+</Container>
+
+@code {
+    private UserRegistrationModel model = new();
+    private bool submitted;
+
+    private void HandleValidSubmit()
+    {
+        submitted = true;
+    }
+
+    private void ResetForm()
+    {
+        model = new();
+        submitted = false;
+    }
+
+    public class UserRegistrationModel
+    {
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be between 2 and 50 characters")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "Invalid phone number")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Address is required")]
+        public string Address { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "City is required")]
+        public string City { get; set; } = string.Empty;
+
+        public string? PostalCode { get; set; }
+
+        [Required(ErrorMessage = "Age is required")]
+        [Range(18, 100, ErrorMessage = "Age must be between 18 and 100")]
+        public int Age { get; set; } = 18;
+
+        public string? Gender { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+
+        [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters")]
+        public string? Bio { get; set; }
+
+        public bool SubscribeNewsletter { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms and conditions")]
+        public bool AcceptTerms { get; set; }
+    }
+}

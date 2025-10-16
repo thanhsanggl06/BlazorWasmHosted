@@ -1,0 +1,144 @@
+﻿<div class="@GetStackClass()" style="@GetStackStyle()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// 子コンテンツ
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// スタックの方向 (column, row, column-reverse, row-reverse)
+    /// </summary>
+    /// <remarks>
+    /// - column: 縦方向に配置
+    /// - row: 横方向に配置
+    /// - column-reverse: 縦方向に逆順で配置
+    /// - row-reverse: 横方向に逆順で配置
+    /// </remarks>
+    [Parameter]
+    public string Direction { get; set; } = "column";
+
+    /// <summary>
+    /// アイテム間のスペース (0-5)
+    /// </summary>
+    /// <remarks>
+    /// - 0: 0
+    /// - 1: 0.25rem (4px)
+    /// - 2: 0.5rem (8px)
+    /// - 3: 1rem (16px)
+    /// - 4: 1.5rem (24px)
+    /// - 5: 3rem (48px)
+    /// </remarks>
+    [Parameter]
+    public int Spacing { get; set; } = 2;
+
+    /// <summary>
+    /// 主軸方向の配置 (start, center, end, between, around, evenly)
+    /// </summary>
+    [Parameter]
+    public string? JustifyContent { get; set; }
+
+    /// <summary>
+    /// 交差軸方向の配置 (start, center, end, baseline, stretch)
+    /// </summary>
+    [Parameter]
+    public string? AlignItems { get; set; }
+
+    /// <summary>
+    /// アイテム間に区切り線を表示するか
+    /// </summary>
+    [Parameter]
+    public bool Divider { get; set; } = false;
+
+    /// <summary>
+    /// 区切り線の色 (Bootstrapカラー)
+    /// </summary>
+    [Parameter]
+    public string? DividerColor { get; set; } = "border";
+
+    /// <summary>
+    /// 追加のCSSクラス
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// インラインスタイル
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// その他の属性
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Stackのクラス名を取得
+    /// </summary>
+    private string GetStackClass()
+    {
+        var classes = new List<string> { "d-flex" };
+
+        // Direction
+        var flexDirection = Direction.ToLower() switch
+        {
+            "row" => "flex-row",
+            "row-reverse" => "flex-row-reverse",
+            "column-reverse" => "flex-column-reverse",
+            _ => "flex-column"
+        };
+        classes.Add(flexDirection);
+
+        // Spacing (gap utility)
+        if (Spacing > 0)
+        {
+            classes.Add($"gap-{Spacing}");
+        }
+
+        // Justify Content
+        if (!string.IsNullOrEmpty(JustifyContent))
+        {
+            classes.Add($"justify-content-{JustifyContent}");
+        }
+
+        // Align Items
+        if (!string.IsNullOrEmpty(AlignItems))
+        {
+            classes.Add($"align-items-{AlignItems}");
+        }
+
+        if (!string.IsNullOrEmpty(Class))
+        {
+            classes.Add(Class);
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    /// <summary>
+    /// Stackのインラインスタイルを取得
+    /// </summary>
+    private string? GetStackStyle()
+    {
+        var styles = new List<string>();
+
+        // Divider styles (nếu cần)
+        if (Divider)
+        {
+            var borderDirection = Direction.ToLower().Contains("column") ? "border-top" : "border-start";
+            styles.Add($"--stack-divider: 1px solid var(--bs-{DividerColor})");
+        }
+
+        if (!string.IsNullOrEmpty(Style))
+        {
+            styles.Add(Style);
+        }
+
+        return styles.Count > 0 ? string.Join("; ", styles) : null;
+    }
+}

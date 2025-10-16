@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmHosted.Data", "Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmHosted.Services", "BlazorWasmHosted.Services\BlazorWasmHosted.Services.csproj", "{83625C1A-3F7C-438B-BA0D-CF600ABDDDE0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmHosted.Components", "BlazorWasmHosted.Components\BlazorWasmHosted.Components.csproj", "{A50DDDFB-B781-439B-98F3-9B342C86B242}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,8 +85,23 @@ Global
 		{83625C1A-3F7C-438B-BA0D-CF600ABDDDE0}.Release|x64.Build.0 = Release|Any CPU
 		{83625C1A-3F7C-438B-BA0D-CF600ABDDDE0}.Release|x86.ActiveCfg = Release|Any CPU
 		{83625C1A-3F7C-438B-BA0D-CF600ABDDDE0}.Release|x86.Build.0 = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|x64.Build.0 = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Debug|x86.Build.0 = Debug|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|x64.ActiveCfg = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|x64.Build.0 = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|x86.ActiveCfg = Release|Any CPU
+		{A50DDDFB-B781-439B-98F3-9B342C86B242}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D68B91F-2B5F-4597-86F3-3CF4C38D076C}
 	EndGlobalSection
 EndGlobal

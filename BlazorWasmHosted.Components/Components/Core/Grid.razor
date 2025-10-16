@@ -1,0 +1,197 @@
+﻿<div class="@GetGridClass()" style="@GetGridStyle()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// 子コンテンツ
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gridコンテナとしてマークする
+    /// </summary>
+    [Parameter]
+    public bool Container { get; set; } = false;
+
+    /// <summary>
+    /// Gridアイテムとしてマークする
+    /// </summary>
+    [Parameter]
+    public bool Item { get; set; } = false;
+
+    /// <summary>
+    /// Extra Smallスクリーンでのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Xs { get; set; }
+
+    /// <summary>
+    /// Smallスクリーン (≥576px) でのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Sm { get; set; }
+
+    /// <summary>
+    /// Mediumスクリーン (≥768px) でのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Md { get; set; }
+
+    /// <summary>
+    /// Largeスクリーン (≥992px) でのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Lg { get; set; }
+
+    /// <summary>
+    /// Extra Largeスクリーン (≥1200px) でのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Xl { get; set; }
+
+    /// <summary>
+    /// Extra Extra Largeスクリーン (≥1400px) でのカラム数 (1-12) または0で自動幅
+    /// </summary>
+    [Parameter]
+    public int? Xxl { get; set; }
+
+    /// <summary>
+    /// Gridアイテム間のスペース（ガター） (0-5)
+    /// </summary>
+    [Parameter]
+    public int Spacing { get; set; } = 0;
+
+    /// <summary>
+    /// 主軸方向の配置 (start, center, end, between, around, evenly)
+    /// </summary>
+    [Parameter]
+    public string? JustifyContent { get; set; }
+
+    /// <summary>
+    /// 交差軸方向の配置 (start, center, end, baseline, stretch)
+    /// </summary>
+    [Parameter]
+    public string? AlignItems { get; set; }
+
+    /// <summary>
+    /// Flexの方向 (row, row-reverse, column, column-reverse)
+    /// </summary>
+    [Parameter]
+    public string? Direction { get; set; }
+
+    /// <summary>
+    /// 追加のCSSクラス
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// インラインスタイル
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// その他の属性
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Gridのクラス名を取得
+    /// </summary>
+    private string GetGridClass()
+    {
+        var classes = new List<string>();
+
+        if (Container)
+        {
+            classes.Add("row");
+
+            if (Spacing > 0)
+            {
+                classes.Add($"g-{Spacing}");
+            }
+
+            if (!string.IsNullOrEmpty(JustifyContent))
+            {
+                classes.Add($"justify-content-{JustifyContent}");
+            }
+
+            if (!string.IsNullOrEmpty(AlignItems))
+            {
+                classes.Add($"align-items-{AlignItems}");
+            }
+        }
+
+        if (Item)
+        {
+            if (Xs.HasValue)
+            {
+                classes.Add(Xs.Value == 0 ? "col" : $"col-{Xs.Value}");
+            }
+            if (Sm.HasValue)
+            {
+                classes.Add(Sm.Value == 0 ? "col-sm" : $"col-sm-{Sm.Value}");
+            }
+            if (Md.HasValue)
+            {
+                classes.Add(Md.Value == 0 ? "col-md" : $"col-md-{Md.Value}");
+            }
+            if (Lg.HasValue)
+            {
+                classes.Add(Lg.Value == 0 ? "col-lg" : $"col-lg-{Lg.Value}");
+            }
+            if (Xl.HasValue)
+            {
+                classes.Add(Xl.Value == 0 ? "col-xl" : $"col-xl-{Xl.Value}");
+            }
+            if (Xxl.HasValue)
+            {
+                classes.Add(Xxl.Value == 0 ? "col-xxl" : $"col-xxl-{Xxl.Value}");
+            }
+
+            if (!Xs.HasValue && !Sm.HasValue && !Md.HasValue && !Lg.HasValue && !Xl.HasValue && !Xxl.HasValue)
+            {
+                classes.Add("col");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(Class))
+        {
+            classes.Add(Class);
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    /// <summary>
+    /// Gridのインラインスタイルを取得
+    /// </summary>
+    private string? GetGridStyle()
+    {
+        var styles = new List<string>();
+
+        if (Container && !string.IsNullOrEmpty(Direction))
+        {
+            var flexDirection = Direction switch
+            {
+                "row" => "row",
+                "row-reverse" => "row-reverse",
+                "column" => "column",
+                "column-reverse" => "column-reverse",
+                _ => "row"
+            };
+            styles.Add($"flex-direction: {flexDirection}");
+        }
+
+        if (!string.IsNullOrEmpty(Style))
+        {
+            styles.Add(Style);
+        }
+
+        return styles.Count > 0 ? string.Join("; ", styles) : null;
+    }
+}

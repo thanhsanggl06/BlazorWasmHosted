@@ -1,0 +1,105 @@
+﻿<div class="@GetContainerClass()" style="@GetContainerStyle()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// 子コンテンツ
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// 最大幅の設定 (xs, sm, md, lg, xl, xxl, fluid)
+    /// </summary>
+    /// <remarks>
+    /// - xs: 100%
+    /// - sm: 540px
+    /// - md: 720px
+    /// - lg: 960px
+    /// - xl: 1140px
+    /// - xxl: 1320px
+    /// - fluid: 100% (全幅)
+    /// </remarks>
+    [Parameter]
+    public string MaxWidth { get; set; } = "lg";
+
+    /// <summary>
+    /// 固定コンテナを使用するか (container-{breakpoint})
+    /// </summary>
+    [Parameter]
+    public bool Fixed { get; set; } = false;
+
+    /// <summary>
+    /// 左右のパディング（ガター）を無効にするか
+    /// </summary>
+    [Parameter]
+    public bool DisableGutters { get; set; } = false;
+
+    /// <summary>
+    /// 追加のCSSクラス
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// インラインスタイル
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// その他の属性
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Containerのクラス名を取得
+    /// </summary>
+    private string GetContainerClass()
+    {
+        var classes = new List<string>();
+
+        if (MaxWidth == "fluid")
+        {
+            classes.Add("container-fluid");
+        }
+        else if (Fixed)
+        {
+            classes.Add($"container-{MaxWidth}");
+        }
+        else
+        {
+            classes.Add("container");
+        }
+
+        if (!string.IsNullOrEmpty(Class))
+        {
+            classes.Add(Class);
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    /// <summary>
+    /// Containerのインラインスタイルを取得
+    /// </summary>
+    private string? GetContainerStyle()
+    {
+        var styles = new List<string>();
+
+        if (DisableGutters)
+        {
+            styles.Add("padding-left: 0");
+            styles.Add("padding-right: 0");
+        }
+
+        if (!string.IsNullOrEmpty(Style))
+        {
+            styles.Add(Style);
+        }
+
+        return styles.Count > 0 ? string.Join("; ", styles) : null;
+    }
+}
