@@ -1,0 +1,483 @@
+﻿@page "/messagebox-demov2"
+@using BlazorWasmHosted.Components
+@inject IMessageBoxService MessageBox
+
+<PageTitle>メッセージボックス デモ</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="bi bi-chat-square-dots"></i> メッセージボックス デモ
+            </h2>
+        </div>
+    </div>
+
+    <!-- Result Display Area with Return Values -->
+    @if (!string.IsNullOrEmpty(resultMessage))
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-@lastResultType shadow">
+                    <div class="card-header bg-@lastResultType text-white">
+                        <h5 class="mb-0">
+                            <i class="bi @GetResultIcon()"></i> 実行結果
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2">メッセージ:</h6>
+                                <p class="mb-3">@resultMessage</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2">戻り値:</h6>
+                                <div class="p-3 bg-light rounded">
+                                    @if (lastReturnValue != null)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-secondary">型:</span>
+                                            <code>@lastReturnValueType</code>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                            <span class="badge bg-primary">値:</span>
+                                            <code class="text-@GetValueColorClass()">@FormatReturnValue()</code>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">戻り値なし (void)</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-3" @onclick="ClearResult">
+                            <i class="bi bi-x-circle"></i> クリア
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Return Value Examples Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-code-square"></i> 戻り値のデモ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Task (void) -->
+                        <div class="col-md-4">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-light">
+                                    <small class="text-muted">戻り値: void</small>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-success w-100 mb-2" @onclick="DemoVoidReturn">
+                                        <i class="bi bi-check-circle"></i> AlertAsync
+                                    </button>
+                                    <pre class="bg-dark text-light p-2 rounded mb-0" style="font-size: 0.75rem;">await MessageBox.AlertAsync(
+  "メッセージ", 
+  "タイトル"
+);
+// 戻り値: なし</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Task<bool> -->
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-light">
+                                    <small class="text-muted">戻り値: Task&lt;bool&gt;</small>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-primary w-100 mb-2" @onclick="DemoBoolReturn">
+                                        <i class="bi bi-question-circle"></i> ConfirmAsync
+                                    </button>
+                                    <pre class="bg-dark text-light p-2 rounded mb-0" style="font-size: 0.75rem;">bool result = 
+  await MessageBox.ConfirmAsync(
+    "確認メッセージ", 
+    "タイトル"
+  );
+// 戻り値: true/false</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Task<string> -->
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-light">
+                                    <small class="text-muted">戻り値: Task&lt;string&gt;</small>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-warning w-100 mb-2" @onclick="DemoStringReturn">
+                                        <i class="bi bi-pencil-square"></i> PromptAsync
+                                    </button>
+                                    <pre class="bg-dark text-light p-2 rounded mb-0" style="font-size: 0.75rem;">string result = 
+  await MessageBox.PromptAsync(
+    "入力してください", 
+    "タイトル",
+    "デフォルト値"
+  );
+// 戻り値: string or null</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Return Values -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-toggle-on"></i> ConfirmAsync - bool戻り値</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        ConfirmAsyncは<code>Task&lt;bool&gt;</code>を返します。「はい」= true、「いいえ」= false
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-success w-100" @onclick="ConfirmTrue">
+                                <i class="bi bi-hand-thumbs-up"></i> 「はい」をクリック
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-danger w-100" @onclick="ConfirmFalse">
+                                <i class="bi bi-hand-thumbs-down"></i> 「いいえ」をクリック
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100" @onclick="ConfirmConditional">
+                                <i class="bi bi-git-merge"></i> 条件分岐デモ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Return Values -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-input-cursor-text"></i> PromptAsync - string戻り値</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        PromptAsyncは<code>Task&lt;string&gt;</code>を返します。OKクリック = 入力値、キャンセル = null
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-info w-100" @onclick="PromptWithValue">
+                                <i class="bi bi-keyboard"></i> 値を入力
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-secondary w-100" @onclick="PromptCancel">
+                                <i class="bi bi-x-circle"></i> キャンセル
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Value History -->
+    @if (returnValueHistory.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> 戻り値履歴</h5>
+                        <button class="btn btn-sm btn-light" @onclick="ClearHistory">
+                            <i class="bi bi-trash"></i> クリア
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>時刻</th>
+                                        <th>メソッド</th>
+                                        <th>戻り値型</th>
+                                        <th>戻り値</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var (item, index) in returnValueHistory.Select((item, i) => (item, returnValueHistory.Count - i)))
+                                    {
+                                        <tr>
+                                            <td>@index</td>
+                                            <td><small>@item.Timestamp.ToString("HH:mm:ss")</small></td>
+                                            <td><code>@item.MethodName</code></td>
+                                            <td><span class="badge bg-info">@item.ReturnType</span></td>
+                                            <td><code class="text-@GetHistoryValueColor(item)">@item.ReturnValue</code></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string resultMessage = "";
+    private string lastResultType = "info";
+    private object? lastReturnValue = null;
+    private string lastReturnValueType = "";
+
+    private List<ReturnValueHistory> returnValueHistory = new();
+
+    private class ReturnValueHistory
+    {
+        public DateTime Timestamp { get; set; }
+        public string MethodName { get; set; } = "";
+        public string ReturnType { get; set; } = "";
+        public string ReturnValue { get; set; } = "";
+    }
+
+    // ============ RETURN VALUE DEMOS ============
+
+    private async Task DemoVoidReturn()
+    {
+        await MessageBox.SuccessAsync("これはvoidを返すメソッドです。", "AlertAsync");
+
+        resultMessage = "AlertAsync を実行しました";
+        lastResultType = "success";
+        lastReturnValue = null;
+        lastReturnValueType = "void (Task)";
+
+        AddToHistory("AlertAsync()", "void", "なし");
+    }
+
+    private async Task DemoBoolReturn()
+    {
+        bool result = await MessageBox.ConfirmAsync("続行しますか？", "ConfirmAsync");
+
+        resultMessage = $"ConfirmAsync を実行しました - ユーザーは「{(result ? "はい" : "いいえ")}」をクリック";
+        lastResultType = result ? "success" : "secondary";
+        lastReturnValue = result;
+        lastReturnValueType = "bool";
+
+        AddToHistory("ConfirmAsync()", "bool", result.ToString());
+    }
+
+    private async Task DemoStringReturn()
+    {
+        string? result = await MessageBox.PromptAsync("名前を入力してください:", "PromptAsync", "");
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            resultMessage = $"PromptAsync を実行しました - 入力値を取得";
+            lastResultType = "success";
+            lastReturnValue = result;
+            lastReturnValueType = "string";
+            AddToHistory("PromptAsync()", "string", $"\"{result}\"");
+        }
+        else
+        {
+            resultMessage = "PromptAsync を実行しました - キャンセルされました";
+            lastResultType = "secondary";
+            lastReturnValue = null;
+            lastReturnValueType = "string";
+            AddToHistory("PromptAsync()", "string", "null");
+        }
+    }
+
+    // ============ CONFIRM BOOL RETURNS ============
+
+    private async Task ConfirmTrue()
+    {
+        bool result = await MessageBox.ConfirmAsync(
+            "「はい」をクリックしてください。\n戻り値がtrueになります。",
+            "確認");
+
+        resultMessage = result
+            ? "✓ 期待通り: ユーザーが「はい」をクリック → true"
+            : "✗ ユーザーが「いいえ」をクリック → false";
+        lastResultType = result ? "success" : "warning";
+        lastReturnValue = result;
+        lastReturnValueType = "bool";
+
+        AddToHistory("ConfirmAsync()", "bool", result.ToString());
+    }
+
+    private async Task ConfirmFalse()
+    {
+        bool result = await MessageBox.ConfirmAsync(
+            "「いいえ」をクリックしてください。\n戻り値がfalseになります。",
+            "確認");
+
+        resultMessage = !result
+            ? "✓ 期待通り: ユーザーが「いいえ」をクリック → false"
+            : "✗ ユーザーが「はい」をクリック → true";
+        lastResultType = !result ? "success" : "warning";
+        lastReturnValue = result;
+        lastReturnValueType = "bool";
+
+        AddToHistory("ConfirmAsync()", "bool", result.ToString());
+    }
+
+    private async Task ConfirmConditional()
+    {
+        bool result = await MessageBox.ConfirmAsync(
+            "データを保存しますか？\n\n戻り値に基づいて条件分岐します。",
+            "保存確認");
+
+        lastReturnValue = result;
+        lastReturnValueType = "bool";
+        AddToHistory("ConfirmAsync()", "bool", result.ToString());
+
+        if (result)
+        {
+            await Task.Delay(500);
+            await MessageBox.SuccessAsync("✓ if (result == true) ブランチ実行\nデータを保存しました！", "保存完了");
+            resultMessage = "✓ 条件分岐: true → 保存実行";
+            lastResultType = "success";
+        }
+        else
+        {
+            await MessageBox.AlertAsync("✗ else (result == false) ブランチ実行\n保存をキャンセルしました。", "キャンセル");
+            resultMessage = "✗ 条件分岐: false → キャンセル";
+            lastResultType = "secondary";
+        }
+    }
+
+    // ============ PROMPT STRING RETURNS ============
+
+    private async Task PromptWithValue()
+    {
+        string? result = await MessageBox.PromptAsync(
+            "何か入力してOKをクリックしてください。\n入力値が戻り値になります。",
+            "入力",
+            "サンプルテキスト");
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            await MessageBox.SuccessAsync($"✓ 入力値を取得しました:\n\n\"{result}\"\n\n長さ: {result.Length}文字", "取得成功");
+            resultMessage = $"✓ Prompt戻り値: \"{result}\" (length: {result.Length})";
+            lastResultType = "success";
+            lastReturnValue = result;
+            lastReturnValueType = "string";
+            AddToHistory("PromptAsync()", "string", $"\"{result}\"");
+        }
+        else
+        {
+            await MessageBox.WarningAsync("✗ 入力がキャンセルされました。\n戻り値: null", "キャンセル");
+            resultMessage = "✗ Prompt戻り値: null (キャンセル)";
+            lastResultType = "warning";
+            lastReturnValue = null;
+            lastReturnValueType = "string";
+            AddToHistory("PromptAsync()", "string", "null");
+        }
+    }
+
+    private async Task PromptCancel()
+    {
+        string? result = await MessageBox.PromptAsync(
+            "キャンセルボタンをクリックしてください。\n戻り値がnullになります。",
+            "入力",
+            "");
+
+        if (result == null)
+        {
+            await MessageBox.SuccessAsync("✓ 期待通り: キャンセル → null", "確認");
+            resultMessage = "✓ Prompt戻り値: null (期待通り)";
+            lastResultType = "success";
+        }
+        else
+        {
+            await MessageBox.AlertAsync($"ℹ 入力値がありました: \"{result}\"", "情報");
+            resultMessage = $"ℹ Prompt戻り値: \"{result}\"";
+            lastResultType = "info";
+        }
+
+        lastReturnValue = result;
+        lastReturnValueType = "string";
+        AddToHistory("PromptAsync()", "string", result == null ? "null" : $"\"{result}\"");
+    }
+
+    // ============ UTILITIES ============
+
+    private void AddToHistory(string methodName, string returnType, string returnValue)
+    {
+        returnValueHistory.Insert(0, new ReturnValueHistory
+        {
+            Timestamp = DateTime.Now,
+            MethodName = methodName,
+            ReturnType = returnType,
+            ReturnValue = returnValue
+        });
+
+        if (returnValueHistory.Count > 20)
+        {
+            returnValueHistory.RemoveAt(returnValueHistory.Count - 1);
+        }
+    }
+
+    private void ClearResult()
+    {
+        resultMessage = "";
+        lastReturnValue = null;
+    }
+
+    private void ClearHistory()
+    {
+        returnValueHistory.Clear();
+    }
+
+    private string FormatReturnValue()
+    {
+        if (lastReturnValue == null) return "null";
+        if (lastReturnValue is bool b) return b.ToString().ToLower();
+        if (lastReturnValue is string s) return $"\"{s}\"";
+        return lastReturnValue.ToString() ?? "null";
+    }
+
+    private string GetValueColorClass()
+    {
+        if (lastReturnValue == null) return "muted";
+        if (lastReturnValue is bool b) return b ? "success" : "danger";
+        return "primary";
+    }
+
+    private string GetHistoryValueColor(ReturnValueHistory item)
+    {
+        if (item.ReturnValue == "null") return "muted";
+        if (item.ReturnValue == "true") return "success";
+        if (item.ReturnValue == "false") return "danger";
+        return "primary";
+    }
+
+    private string GetResultIcon()
+    {
+        return lastResultType switch
+        {
+            "success" => "bi-check-circle-fill",
+            "danger" => "bi-x-circle-fill",
+            "warning" => "bi-exclamation-triangle-fill",
+            "info" => "bi-info-circle-fill",
+            _ => "bi-chat-square-dots"
+        };
+    }
+}

@@ -1,0 +1,342 @@
+﻿@* Components/MessageBoxContainer.razor *@
+@inject IMessageBoxService MessageBoxService
+@implements IDisposable
+
+<style>
+    /* Bootstrap Modal Styling - Căn giữa theo main content */
+    .messagebox-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        opacity: 0;
+        transition: opacity 0.15s linear;
+    }
+
+    .messagebox-backdrop.show {
+        opacity: 1;
+    }
+
+    @@media (min-width: 641px) {
+        .messagebox-backdrop {
+            left: 250px; /* Width của sidebar */
+        }
+    }
+
+    .messagebox-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1050;
+        display: none;
+        overflow: hidden;
+        outline: 0;
+    }
+
+    .messagebox-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @@media (min-width: 641px) {
+        .messagebox-modal {
+            left: 250px; /* Width của sidebar */
+        }
+    }
+
+    .messagebox-dialog {
+        width: 450px;
+        max-width: 90vw;
+        margin: 1rem;
+        pointer-events: auto;
+        transform: scale(0.9);
+        opacity: 0;
+        transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    }
+
+    .messagebox-modal.show .messagebox-dialog {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .messagebox-content {
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        pointer-events: auto;
+    }
+
+    .messagebox-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: calc(0.5rem - 1px);
+        border-top-right-radius: calc(0.5rem - 1px);
+    }
+
+    .messagebox-title {
+        margin: 0;
+        line-height: 1.5;
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    .messagebox-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+    }
+
+    .messagebox-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0.75rem;
+        border-top: 1px solid #dee2e6;
+        border-bottom-right-radius: calc(0.5rem - 1px);
+        border-bottom-left-radius: calc(0.5rem - 1px);
+        gap: 0.5rem;
+    }
+</style>
+
+@if (currentModel != null)
+{
+    <!-- Backdrop -->
+    <div class="messagebox-backdrop @(isVisible ? "show" : "")" @onclick="@(() => {})"></div>
+
+    <!-- Modal -->
+    <div class="messagebox-modal @(isVisible ? "show" : "")" tabindex="-1" role="dialog">
+        <div class="messagebox-dialog" role="document">
+            <div class="messagebox-content">
+                <!-- Header -->
+                <div class="messagebox-header @GetHeaderBgClass()">
+                    <h5 class="messagebox-title d-flex align-items-center gap-2">
+                        <span style="font-size: 20px;">
+                            @GetHeaderIcon()
+                        </span>
+                        <span>@currentModel.Title</span>
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div class="messagebox-body">
+                    <div class="d-flex align-items-start gap-3">
+                        <!-- Icon -->
+                        <div class="flex-shrink-0">
+                            <div class="@GetIconClass()" style="font-size: 48px;">
+                                @GetIcon()
+                            </div>
+                        </div>
+
+                        <!-- Message Content -->
+                        <div class="flex-grow-1">
+                            @if (currentModel.Type == MessageBoxType.Prompt)
+                            {
+                                <p class="mb-3">@currentModel.Message</p>
+                                <input type="text"
+                                       class="form-control"
+                                       @bind="promptValue"
+                                       @bind:event="oninput"
+                                       placeholder="@currentModel.DefaultValue"
+                                       @ref="promptInput" />
+                            }
+                            else
+                            {
+                                <p class="mb-0">@((MarkupString)currentModel.Message.Replace("\n", "<br/>"))</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="messagebox-footer">
+                    @switch (currentModel.Buttons)
+                    {
+                        case MessageBoxButtons.OK:
+                            <button class="btn btn-primary" @onclick="() => Close(MessageBoxResult.OK)">
+                                @currentModel.OkButtonText
+                            </button>
+                            break;
+
+                        case MessageBoxButtons.OKCancel:
+                            <button class="btn btn-secondary" @onclick="() => Close(MessageBoxResult.Cancel)">
+                                @currentModel.CancelButtonText
+                            </button>
+                            <button class="btn btn-primary" @onclick="() => Close(MessageBoxResult.OK)">
+                                @currentModel.OkButtonText
+                            </button>
+                            break;
+
+                        case MessageBoxButtons.YesNo:
+                            <button class="btn btn-secondary" @onclick="() => Close(MessageBoxResult.No)">
+                                @currentModel.NoButtonText
+                            </button>
+                            <button class="btn btn-primary" @onclick="() => Close(MessageBoxResult.Yes)">
+                                @currentModel.YesButtonText
+                            </button>
+                            break;
+
+                        case MessageBoxButtons.YesNoCancel:
+                            <button class="btn btn-secondary" @onclick="() => Close(MessageBoxResult.Cancel)">
+                                @currentModel.CancelButtonText
+                            </button>
+                            <button class="btn btn-outline-secondary" @onclick="() => Close(MessageBoxResult.No)">
+                                @currentModel.NoButtonText
+                            </button>
+                            <button class="btn btn-primary" @onclick="() => Close(MessageBoxResult.Yes)">
+                                @currentModel.YesButtonText
+                            </button>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private MessageBoxModel? currentModel;
+    private TaskCompletionSource<MessageBoxResult>? taskCompletion;
+    private TaskCompletionSource<string>? promptTaskCompletion;
+    private string promptValue = "";
+    private bool isVisible = false;
+    private ElementReference promptInput;
+
+    protected override void OnInitialized()
+    {
+        MessageBoxService.OnShow += ShowMessageBox;
+        MessageBoxService.OnPrompt += ShowPromptBox;
+    }
+
+    private async Task<MessageBoxResult> ShowMessageBox(MessageBoxModel model)
+    {
+        currentModel = model;
+        promptValue = model.DefaultValue;
+        taskCompletion = new TaskCompletionSource<MessageBoxResult>();
+
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Delay để render DOM
+
+        isVisible = true;
+        await InvokeAsync(StateHasChanged);
+
+        return await taskCompletion.Task;
+    }
+
+    private async Task<string> ShowPromptBox(string modelJson)
+    {
+        var model = System.Text.Json.JsonSerializer.Deserialize<MessageBoxModel>(modelJson);
+        currentModel = model;
+        promptValue = model.DefaultValue;
+        promptTaskCompletion = new TaskCompletionSource<string>();
+
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Delay để render DOM
+
+        isVisible = true;
+        await InvokeAsync(StateHasChanged);
+
+        return await promptTaskCompletion.Task;
+    }
+
+    private async void Close(MessageBoxResult result)
+    {
+        isVisible = false;
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(150); // Delay để animation hoàn thành
+
+        if (currentModel?.Type == MessageBoxType.Prompt)
+        {
+            if (result == MessageBoxResult.OK)
+            {
+                promptTaskCompletion?.SetResult(promptValue);
+            }
+            else
+            {
+                promptTaskCompletion?.SetResult(null);
+            }
+        }
+        else
+        {
+            taskCompletion?.SetResult(result);
+        }
+
+        currentModel = null;
+        promptValue = "";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string GetHeaderBgClass()
+    {
+        return currentModel?.Type switch
+        {
+            MessageBoxType.Success => "text-success",
+            MessageBoxType.Error => "text-danger",
+            MessageBoxType.Warning => "text-warning",
+            MessageBoxType.Question => "text-info",
+            MessageBoxType.Prompt => "text-secondary",
+            _ => "text-primary"
+        };
+    }
+
+    private string GetIconClass()
+    {
+        return currentModel?.Type switch
+        {
+            MessageBoxType.Success => "text-success",
+            MessageBoxType.Error => "text-danger",
+            MessageBoxType.Warning => "text-warning",
+            MessageBoxType.Question => "text-info",
+            MessageBoxType.Prompt => "text-secondary",
+            _ => "text-primary"
+        };
+    }
+
+    private MarkupString GetHeaderIcon()
+    {
+        return currentModel?.Type switch
+        {
+            MessageBoxType.Success => (MarkupString)"<i class='bi bi-check-circle-fill'></i>",
+            MessageBoxType.Error => (MarkupString)"<i class='bi bi-x-circle-fill'></i>",
+            MessageBoxType.Warning => (MarkupString)"<i class='bi bi-exclamation-triangle-fill'></i>",
+            MessageBoxType.Question => (MarkupString)"<i class='bi bi-question-circle-fill'></i>",
+            MessageBoxType.Prompt => (MarkupString)"<i class='bi bi-pencil-square'></i>",
+            _ => (MarkupString)"<i class='bi bi-info-circle-fill'></i>"
+        };
+    }
+
+    private MarkupString GetIcon()
+    {
+        var icon = currentModel?.Type switch
+        {
+            MessageBoxType.Success => "bi-check-circle-fill",
+            MessageBoxType.Error => "bi-x-circle-fill",
+            MessageBoxType.Warning => "bi-exclamation-triangle-fill",
+            MessageBoxType.Question => "bi-question-circle-fill",
+            MessageBoxType.Prompt => "bi-pencil-square",
+            _ => "bi-info-circle-fill"
+        };
+
+        return (MarkupString)$"<i class='bi {icon}'></i>";
+    }
+
+    public void Dispose()
+    {
+        MessageBoxService.OnShow -= ShowMessageBox;
+        MessageBoxService.OnPrompt -= ShowPromptBox;
+    }
+}

@@ -1,0 +1,743 @@
+﻿@page "/messagebox-demo"
+@using BlazorWasmHosted.Components
+@inject IMessageBoxService MessageBox
+
+<PageTitle>メッセージボックス デモ</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="bi bi-chat-square-dots"></i> メッセージボックス デモ
+            </h2>
+        </div>
+    </div>
+
+    <!-- Result Display Area -->
+    @if (!string.IsNullOrEmpty(resultMessage))
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert @GetResultAlertClass() alert-dismissible fade show" role="alert">
+                    <strong><i class="bi @GetResultIcon()"></i> 結果:</strong> @resultMessage
+                    <button type="button" class="btn-close" @onclick="ClearResult"></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Basic Alerts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> 基本アラート</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100" @onclick="ShowSuccess">
+                                <i class="bi bi-check-circle"></i> 成功メッセージ
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-danger w-100" @onclick="ShowError">
+                                <i class="bi bi-x-circle"></i> エラーメッセージ
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning w-100" @onclick="ShowWarning">
+                                <i class="bi bi-exclamation-triangle"></i> 警告メッセージ
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-info w-100" @onclick="ShowInfo">
+                                <i class="bi bi-info-circle"></i> 情報メッセージ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Dialogs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> 確認ダイアログ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100" @onclick="ShowSimpleConfirm">
+                                <i class="bi bi-check2-square"></i> シンプル確認
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-danger w-100" @onclick="ShowDeleteConfirm">
+                                <i class="bi bi-trash"></i> 削除確認
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-success w-100" @onclick="ShowSaveConfirm">
+                                <i class="bi bi-save"></i> 保存確認
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Dialogs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> 入力ダイアログ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-secondary w-100" @onclick="ShowNamePrompt">
+                                <i class="bi bi-person"></i> 名前入力
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-secondary w-100" @onclick="ShowEmailPrompt">
+                                <i class="bi bi-envelope"></i> メール入力
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-secondary w-100" @onclick="ShowCommentPrompt">
+                                <i class="bi bi-chat-text"></i> コメント入力
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Scenarios -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> 高度なシナリオ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100" @onclick="ShowMultilineMessage">
+                                <i class="bi bi-text-paragraph"></i> 複数行メッセージ
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" @onclick="ShowLongMessage">
+                                <i class="bi bi-file-text"></i> 長いメッセージ
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-danger w-100" @onclick="ShowValidationErrors">
+                                <i class="bi bi-exclamation-octagon"></i> バリデーションエラー
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100" @onclick="ShowHTMLContent">
+                                <i class="bi bi-code-slash"></i> HTMLコンテンツ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Async Operations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> 非同期操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100" @onclick="SimulateSaveOperation" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-cloud-upload"></i> データ保存
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-danger w-100" @onclick="SimulateDeleteOperation" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-trash3"></i> データ削除
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-info w-100" @onclick="SimulateErrorOperation" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-bug"></i> エラーシミュレート
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sequential Dialogs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0"><i class="bi bi-layers"></i> 連続ダイアログ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary w-100" @onclick="ShowSequentialDialogs">
+                                <i class="bi bi-arrow-right-circle"></i> ステップバイステップ
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-success w-100" @onclick="ShowRegistrationFlow">
+                                <i class="bi bi-person-plus"></i> 登録フロー
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> 統計情報</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-success">@successCount</h3>
+                                <small class="text-muted">成功メッセージ</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-danger">@errorCount</h3>
+                                <small class="text-muted">エラーメッセージ</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-warning">@warningCount</h3>
+                                <small class="text-muted">警告メッセージ</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-info">@infoCount</h3>
+                                <small class="text-muted">情報メッセージ</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="ResetStatistics">
+                                <i class="bi bi-arrow-counterclockwise"></i> 統計をリセット
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string resultMessage = "";
+    private string lastResultType = "info";
+    private bool isProcessing = false;
+
+    // Statistics
+    private int successCount = 0;
+    private int errorCount = 0;
+    private int warningCount = 0;
+    private int infoCount = 0;
+
+    // ============ BASIC ALERTS ============
+
+    private async Task ShowSuccess()
+    {
+        await MessageBox.SuccessAsync("データが正常に保存されました！\nすべての変更が適用されました。");
+        resultMessage = "成功メッセージが表示されました";
+        lastResultType = "success";
+        successCount++;
+    }
+
+    private async Task ShowError()
+    {
+        await MessageBox.ErrorAsync("データ処理中にエラーが発生しました！\n後でもう一度お試しください。");
+        resultMessage = "エラーメッセージが表示されました";
+        lastResultType = "danger";
+        errorCount++;
+    }
+
+    private async Task ShowWarning()
+    {
+        await MessageBox.WarningAsync("警告: データが検証されていません！\n続行する前に確認してください。");
+        resultMessage = "警告メッセージが表示されました";
+        lastResultType = "warning";
+        warningCount++;
+    }
+
+    private async Task ShowInfo()
+    {
+        await MessageBox.AlertAsync("システムがリクエストを処理中です...\nしばらくお待ちください。", "情報");
+        resultMessage = "情報メッセージが表示されました";
+        lastResultType = "info";
+        infoCount++;
+    }
+
+    // ============ CONFIRM DIALOGS ============
+
+    private async Task ShowSimpleConfirm()
+    {
+        bool confirmed = await MessageBox.ConfirmAsync(
+            "この操作を実行してもよろしいですか？",
+            "確認");
+
+        resultMessage = confirmed
+            ? "✓ ユーザーが「はい」をクリックしました"
+            : "✗ ユーザーが「いいえ」をクリックしました";
+        lastResultType = confirmed ? "success" : "secondary";
+    }
+
+    private async Task ShowDeleteConfirm()
+    {
+        bool confirmed = await MessageBox.ConfirmAsync(
+            "このアイテムを削除してもよろしいですか？\n\n⚠️ この操作は元に戻せません！\nすべての関連データも削除されます。",
+            "削除確認");
+
+        if (confirmed)
+        {
+            await MessageBox.SuccessAsync("アイテムが正常に削除されました。", "削除完了");
+            resultMessage = "✓ アイテムが削除されました";
+            lastResultType = "success";
+            successCount++;
+        }
+        else
+        {
+            resultMessage = "✗ 削除がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    private async Task ShowSaveConfirm()
+    {
+        bool confirmed = await MessageBox.ConfirmAsync(
+            "変更を保存しますか？\n\n保存されていない変更は失われます。",
+            "保存確認");
+
+        if (confirmed)
+        {
+            await Task.Delay(1000); // Simulate save
+            await MessageBox.SuccessAsync("変更が正常に保存されました！", "保存完了");
+            resultMessage = "✓ 変更が保存されました";
+            lastResultType = "success";
+            successCount++;
+        }
+        else
+        {
+            resultMessage = "✗ 保存がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    // ============ PROMPT DIALOGS ============
+
+    private async Task ShowNamePrompt()
+    {
+        string name = await MessageBox.PromptAsync(
+            "お名前を入力してください:",
+            "名前入力",
+            "山田太郎");
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            await MessageBox.SuccessAsync($"こんにちは、{name}さん！\nようこそお越しくださいました。", "挨拶");
+            resultMessage = $"✓ 入力された名前: {name}";
+            lastResultType = "success";
+            successCount++;
+        }
+        else
+        {
+            resultMessage = "✗ 入力がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    private async Task ShowEmailPrompt()
+    {
+        string email = await MessageBox.PromptAsync(
+            "メールアドレスを入力してください:",
+            "メール入力",
+            "example@email.com");
+
+        if (!string.IsNullOrEmpty(email))
+        {
+            if (email.Contains("@"))
+            {
+                await MessageBox.SuccessAsync($"メールアドレスが登録されました:\n{email}", "登録完了");
+                resultMessage = $"✓ 登録されたメール: {email}";
+                lastResultType = "success";
+                successCount++;
+            }
+            else
+            {
+                await MessageBox.ErrorAsync("無効なメールアドレス形式です。\n「@」を含む必要があります。", "エラー");
+                resultMessage = "✗ 無効なメール形式";
+                lastResultType = "danger";
+                errorCount++;
+            }
+        }
+        else
+        {
+            resultMessage = "✗ 入力がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    private async Task ShowCommentPrompt()
+    {
+        string comment = await MessageBox.PromptAsync(
+            "コメントを入力してください:",
+            "コメント入力",
+            "");
+
+        if (!string.IsNullOrEmpty(comment))
+        {
+            await MessageBox.SuccessAsync($"コメントが送信されました！\n\n内容: {comment}", "送信完了");
+            resultMessage = $"✓ コメント送信: {comment.Substring(0, Math.Min(30, comment.Length))}...";
+            lastResultType = "success";
+            successCount++;
+        }
+        else
+        {
+            resultMessage = "✗ コメント入力がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    // ============ ADVANCED SCENARIOS ============
+
+    private async Task ShowMultilineMessage()
+    {
+        await MessageBox.AlertAsync(
+            @"これは複数行のメッセージです。
+
+📌 重要なポイント:
+- 第一項目
+- 第二項目
+- 第三項目
+
+詳細については管理者にお問い合わせください。",
+            "複数行メッセージ");
+
+        resultMessage = "✓ 複数行メッセージが表示されました";
+        lastResultType = "info";
+        infoCount++;
+    }
+
+    private async Task ShowLongMessage()
+    {
+        await MessageBox.AlertAsync(
+            @"これは非常に長いメッセージの例です。実際のアプリケーションでは、ユーザーに詳細な情報を提供する必要がある場合があります。
+
+システムは以下の処理を実行しました:
+1. データベース接続の確立
+2. ユーザー認証の検証
+3. アクセス権限の確認
+4. データの取得と処理
+5. 結果の整形と返却
+
+すべての処理が正常に完了しました。引き続きサービスをご利用いただけます。
+
+ご不明な点がございましたら、サポートチームまでお問い合わせください。
+電話: 03-1234-5678
+メール: support@example.com",
+            "詳細情報");
+
+        resultMessage = "✓ 長いメッセージが表示されました";
+        lastResultType = "info";
+        infoCount++;
+    }
+
+    private async Task ShowValidationErrors()
+    {
+        var errors = new List<string>
+        {
+            "<strong>名前:</strong> 名前は必須です（最低3文字）",
+            "<strong>メール:</strong> メールの形式が正しくありません",
+            "<strong>電話:</strong> 電話番号は10桁である必要があります",
+            "<strong>パスワード:</strong> パスワードは8文字以上で、大文字・小文字・数字を含む必要があります",
+            "<strong>生年月日:</strong> 有効な日付を入力してください"
+        };
+
+        var errorMessage = string.Join("<br/>", errors);
+        await MessageBox.ErrorAsync(errorMessage, "バリデーションエラー");
+
+        resultMessage = $"✗ {errors.Count}件のバリデーションエラーが表示されました";
+        lastResultType = "danger";
+        errorCount++;
+    }
+
+    private async Task ShowHTMLContent()
+    {
+        await MessageBox.SuccessAsync(
+            @"<div class='text-center'>
+                <h5>🎉 おめでとうございます！</h5>
+                <p>プレミアム会員にアップグレードされました</p>
+                <hr/>
+                <small>特典が利用可能になりました</small>
+            </div>",
+            "アップグレード完了");
+
+        resultMessage = "✓ HTMLコンテンツが表示されました";
+        lastResultType = "success";
+        successCount++;
+    }
+
+    // ============ ASYNC OPERATIONS ============
+
+    private async Task SimulateSaveOperation()
+    {
+        isProcessing = true;
+
+        try
+        {
+            await MessageBox.AlertAsync("データを保存しています...\nしばらくお待ちください。", "処理中");
+
+            // Simulate API call
+            await Task.Delay(2000);
+
+            await MessageBox.SuccessAsync("データが正常に保存されました！\nすべての変更が適用されました。", "保存完了");
+            resultMessage = "✓ データ保存操作が完了しました";
+            lastResultType = "success";
+            successCount++;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task SimulateDeleteOperation()
+    {
+        isProcessing = true;
+
+        try
+        {
+            bool confirmed = await MessageBox.ConfirmAsync(
+                "⚠️ 本当に削除しますか？\n\nこの操作は取り消せません。",
+                "最終確認");
+
+            if (confirmed)
+            {
+                await MessageBox.AlertAsync("削除処理を実行中...", "処理中");
+
+                // Simulate API call
+                await Task.Delay(1500);
+
+                await MessageBox.SuccessAsync("削除が完了しました。", "削除完了");
+                resultMessage = "✓ データ削除操作が完了しました";
+                lastResultType = "success";
+                successCount++;
+            }
+            else
+            {
+                resultMessage = "✗ 削除操作がキャンセルされました";
+                lastResultType = "secondary";
+            }
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task SimulateErrorOperation()
+    {
+        isProcessing = true;
+
+        try
+        {
+            await MessageBox.AlertAsync("処理を実行中...", "処理中");
+
+            // Simulate API call with error
+            await Task.Delay(1500);
+
+            await MessageBox.ErrorAsync(
+                @"サーバーエラーが発生しました。
+
+エラーコード: 500
+エラーメッセージ: Internal Server Error
+
+管理者に連絡してください。",
+                "エラー発生");
+
+            resultMessage = "✗ エラー操作がシミュレートされました";
+            lastResultType = "danger";
+            errorCount++;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    // ============ SEQUENTIAL DIALOGS ============
+
+    private async Task ShowSequentialDialogs()
+    {
+        // Step 1
+        await MessageBox.AlertAsync("ステップ1: 処理を開始します", "ステップ1/3");
+
+        // Step 2
+        bool continueStep2 = await MessageBox.ConfirmAsync(
+            "ステップ2: 続行しますか？",
+            "ステップ2/3");
+
+        if (!continueStep2)
+        {
+            await MessageBox.WarningAsync("処理がキャンセルされました。", "キャンセル");
+            resultMessage = "✗ ステップ2でキャンセルされました";
+            lastResultType = "warning";
+            warningCount++;
+            return;
+        }
+
+        // Step 3
+        await Task.Delay(1000);
+        await MessageBox.SuccessAsync("ステップ3: すべての処理が完了しました！", "完了");
+
+        resultMessage = "✓ 3ステップの処理が完了しました";
+        lastResultType = "success";
+        successCount++;
+    }
+
+    private async Task ShowRegistrationFlow()
+    {
+        // Name input
+        string name = await MessageBox.PromptAsync(
+            "お名前を入力してください:",
+            "登録 - ステップ1/3",
+            "");
+
+        if (string.IsNullOrEmpty(name))
+        {
+            await MessageBox.WarningAsync("登録がキャンセルされました。", "キャンセル");
+            resultMessage = "✗ 登録フローがキャンセルされました";
+            lastResultType = "warning";
+            warningCount++;
+            return;
+        }
+
+        // Email input
+        string email = await MessageBox.PromptAsync(
+            "メールアドレスを入力してください:",
+            "登録 - ステップ2/3",
+            "");
+
+        if (string.IsNullOrEmpty(email))
+        {
+            await MessageBox.WarningAsync("登録がキャンセルされました。", "キャンセル");
+            resultMessage = "✗ 登録フローがキャンセルされました";
+            lastResultType = "warning";
+            warningCount++;
+            return;
+        }
+
+        // Confirmation
+        bool confirm = await MessageBox.ConfirmAsync(
+            $@"以下の内容で登録しますか？
+
+名前: {name}
+メール: {email}",
+            "登録 - ステップ3/3");
+
+        if (confirm)
+        {
+            await Task.Delay(1000);
+            await MessageBox.SuccessAsync(
+                $"登録が完了しました！\n\nようこそ、{name}さん！\n確認メールを {email} に送信しました。",
+                "登録完了");
+
+            resultMessage = $"✓ {name}さんの登録が完了しました";
+            lastResultType = "success";
+            successCount++;
+        }
+        else
+        {
+            resultMessage = "✗ 登録がキャンセルされました";
+            lastResultType = "secondary";
+        }
+    }
+
+    // ============ UTILITIES ============
+
+    private void ClearResult()
+    {
+        resultMessage = "";
+    }
+
+    private void ResetStatistics()
+    {
+        successCount = 0;
+        errorCount = 0;
+        warningCount = 0;
+        infoCount = 0;
+        resultMessage = "✓ 統計がリセットされました";
+        lastResultType = "info";
+    }
+
+    private string GetResultAlertClass()
+    {
+        return lastResultType switch
+        {
+            "success" => "alert-success",
+            "danger" => "alert-danger",
+            "warning" => "alert-warning",
+            "info" => "alert-info",
+            _ => "alert-secondary"
+        };
+    }
+
+    private string GetResultIcon()
+    {
+        return lastResultType switch
+        {
+            "success" => "bi-check-circle-fill",
+            "danger" => "bi-x-circle-fill",
+            "warning" => "bi-exclamation-triangle-fill",
+            "info" => "bi-info-circle-fill",
+            _ => "bi-chat-square-dots"
+        };
+    }
+}
