@@ -1,0 +1,345 @@
+@page "/supplier-registration"
+@using System.ComponentModel.DataAnnotations
+@using BlazorWasmHosted.Components.Components.Core
+@using BlazorWasmHosted.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Supplier Registration</PageTitle>
+
+<Container MaxWidth="lg" Class="py-4">
+    <Box Mb="4" TextAlign="center">
+        <h1 class="display-5">
+            <span class="bi bi-building"></span> Supplier Registration
+        </h1>
+        <p class="lead">Register a new supplier in the system</p>
+    </Box>
+
+    <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        
+        <!-- Form Card -->
+        <Box Bg="white" Border="true" BorderRadius="3" Shadow="default" P="4" Mb="4">
+            <Stack Direction="column" Spacing="4">
+                
+                <!-- Basic Information Section -->
+                <Box>
+                    <h4 class="mb-3">
+                        <span class="bi bi-info-circle"></span> Basic Information
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Supplier Code *</label>
+                                <InputText class="form-control" @bind-Value="model.SupplierCode" 
+                                          placeholder="e.g., SUP001" maxlength="50" />
+                                <ValidationMessage For="() => model.SupplierCode" />
+                                <small class="text-muted">Unique identifier for the supplier</small>
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Supplier Name *</label>
+                                <InputText class="form-control" @bind-Value="model.SupplierName" 
+                                          placeholder="Enter supplier name" maxlength="200" />
+                                <ValidationMessage For="() => model.SupplierName" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Contact Person</label>
+                                <InputText class="form-control" @bind-Value="model.ContactPerson" 
+                                          placeholder="Enter contact person name" maxlength="100" />
+                                <ValidationMessage For="() => model.ContactPerson" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Status</label>
+                                <Box Display="flex" AlignItems="center" Gap="2" Pt="2">
+                                    <InputCheckbox id="isActive" @bind-Value="model.IsActive" class="form-check-input" />
+                                    <label for="isActive" class="form-check-label">Active Supplier</label>
+                                </Box>
+                                <small class="text-muted">Is the supplier currently active?</small>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Contact Information Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">
+                        <span class="bi bi-envelope"></span> Contact Information
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Email *</label>
+                                <InputText type="email" class="form-control" @bind-Value="model.Email" 
+                                          placeholder="supplier@example.com" maxlength="100" />
+                                <ValidationMessage For="() => model.Email" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Phone Number *</label>
+                                <InputText type="tel" class="form-control" @bind-Value="model.Phone" 
+                                          placeholder="+1-555-0123" maxlength="20" />
+                                <ValidationMessage For="() => model.Phone" />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Address Information Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">
+                        <span class="bi bi-geo-alt"></span> Address Information
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Address *</label>
+                                <InputText class="form-control" @bind-Value="model.Address" 
+                                          placeholder="123 Business Street" maxlength="200" />
+                                <ValidationMessage For="() => model.Address" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">City *</label>
+                                <InputText class="form-control" @bind-Value="model.City" 
+                                          placeholder="Enter city" maxlength="100" />
+                                <ValidationMessage For="() => model.City" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Country *</label>
+                                <InputSelect class="form-select" @bind-Value="model.Country">
+                                    <option value="">-- Select Country --</option>
+                                    <option value="Vietnam">Vietnam</option>
+                                    <option value="United States">United States</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="China">China</option>
+                                    <option value="Japan">Japan</option>
+                                    <option value="South Korea">South Korea</option>
+                                    <option value="Singapore">Singapore</option>
+                                    <option value="Thailand">Thailand</option>
+                                    <option value="Malaysia">Malaysia</option>
+                                    <option value="Indonesia">Indonesia</option>
+                                    <option value="Philippines">Philippines</option>
+                                    <option value="India">India</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="France">France</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="Other">Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => model.Country" />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Form Actions -->
+                <Box Display="flex" JustifyContent="between" Gap="3" Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="NavigateToSuppliers">
+                        <i class="bi bi-arrow-left"></i> Back to Suppliers
+                    </button>
+                    <Box Display="flex" Gap="2">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Submitting...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-check-circle"></i> Register Supplier</span>
+                            }
+                        </button>
+                    </Box>
+                </Box>
+            </Stack>
+        </Box>
+    </EditForm>
+
+    <!-- Success Message -->
+    @if (submitted)
+    {
+        <Box Bg="success" Color="white" Border="true" BorderColor="success" BorderRadius="3" P="4" Mb="3">
+            <Stack Direction="column" Spacing="2">
+                <h4><i class="bi bi-check-circle-fill"></i> Supplier Registered Successfully!</h4>
+                <Box>
+                    <p class="mb-2"><strong>Supplier Code:</strong> @model.SupplierCode</p>
+                    <p class="mb-2"><strong>Supplier Name:</strong> @model.SupplierName</p>
+                    @if (!string.IsNullOrEmpty(model.ContactPerson))
+                    {
+                        <p class="mb-2"><strong>Contact Person:</strong> @model.ContactPerson</p>
+                    }
+                    <p class="mb-2"><strong>Email:</strong> @model.Email</p>
+                    <p class="mb-2"><strong>Phone:</strong> @model.Phone</p>
+                    <p class="mb-2"><strong>Address:</strong> @model.Address, @model.City, @model.Country</p>
+                    <p class="mb-2"><strong>Status:</strong> @(model.IsActive ? "Active" : "Inactive")</p>
+                </Box>
+                <Box Display="flex" Gap="2" Pt="2">
+                    <button class="btn btn-light" @onclick="ResetForm">
+                        <i class="bi bi-plus-circle"></i> Register Another Supplier
+                    </button>
+                    <button class="btn btn-light" @onclick="NavigateToSuppliers">
+                        <i class="bi bi-list"></i> View All Suppliers
+                    </button>
+                </Box>
+            </Stack>
+        </Box>
+    }
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <Box Bg="danger" Color="white" Border="true" BorderColor="danger" BorderRadius="3" P="4" Mb="3">
+            <h5><i class="bi bi-exclamation-triangle-fill"></i> Error</h5>
+            <p class="mb-0">@errorMessage</p>
+        </Box>
+    }
+
+    <!-- Info Card -->
+    <Box Bg="light" Border="true" BorderRadius="2" P="3" Mt="4">
+        <h5 class="mb-3">
+            <span class="bi bi-lightbulb"></span> Registration Guidelines
+        </h5>
+        <Grid Container="true" Spacing="3">
+            <Grid Item="true" Xs="12" Md="6">
+                <Box P="2">
+                    <h6 class="text-primary">Required Fields</h6>
+                    <ul class="small mb-0">
+                        <li>Supplier Code (unique identifier)</li>
+                        <li>Supplier Name</li>
+                        <li>Email (valid email format)</li>
+                        <li>Phone Number</li>
+                        <li>Full Address (street, city, country)</li>
+                    </ul>
+                </Box>
+            </Grid>
+            <Grid Item="true" Xs="12" Md="6">
+                <Box P="2">
+                    <h6 class="text-primary">Tips</h6>
+                    <ul class="small mb-0">
+                        <li>Use uppercase letters and numbers for supplier code</li>
+                        <li>Provide accurate contact information</li>
+                        <li>Mark as "Active" if currently doing business</li>
+                        <li>All required fields must be filled before submission</li>
+                    </ul>
+                </Box>
+            </Grid>
+        </Grid>
+    </Box>
+</Container>
+
+@code {
+    private SupplierRegistrationModel model = new();
+    private bool submitted;
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            var supplierRequest = new CreateSupplierRequest(
+                SupplierCode: model.SupplierCode,
+                SupplierName: model.SupplierName,
+                ContactPerson: model.ContactPerson,
+                Email: model.Email,
+                Phone: model.Phone,
+                Address: model.Address,
+                City: model.City,
+                Country: model.Country
+            );
+
+            var response = await Http.PostAsJsonAsync("api/suppliers", supplierRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                submitted = true;
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to register supplier: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        model = new();
+        submitted = false;
+        errorMessage = null;
+    }
+
+    private void NavigateToSuppliers()
+    {
+        Navigation.NavigateTo("/suppliers");
+    }
+
+    public class SupplierRegistrationModel
+    {
+        [Required(ErrorMessage = "Supplier code is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Supplier code must be between 2 and 50 characters")]
+        [RegularExpression(@"^[A-Z0-9-]+$", ErrorMessage = "Supplier code must contain only uppercase letters, numbers, and hyphens")]
+        public string SupplierCode { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Supplier name is required")]
+        [StringLength(200, MinimumLength = 2, ErrorMessage = "Supplier name must be between 2 and 200 characters")]
+        public string SupplierName { get; set; } = string.Empty;
+
+        [StringLength(100, ErrorMessage = "Contact person name cannot exceed 100 characters")]
+        public string? ContactPerson { get; set; }
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address format")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Phone number is required")]
+        [Phone(ErrorMessage = "Invalid phone number format")]
+        [StringLength(20, MinimumLength = 7, ErrorMessage = "Phone number must be between 7 and 20 characters")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Address is required")]
+        [StringLength(200, MinimumLength = 5, ErrorMessage = "Address must be between 5 and 200 characters")]
+        public string Address { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "City is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "City must be between 2 and 100 characters")]
+        public string City { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Country is required")]
+        [StringLength(100, ErrorMessage = "Country cannot exceed 100 characters")]
+        public string Country { get; set; } = string.Empty;
+
+        public bool IsActive { get; set; } = true;
+    }
+}

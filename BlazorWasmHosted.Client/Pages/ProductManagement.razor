@@ -1,0 +1,148 @@
+﻿@page "/products-review"
+@using C1.Blazor.Grid
+@using C1.Blazor.Core
+@using C1.DataCollection
+@using C1.Blazor.DataPager
+@using BlazorWasmHosted.Shared.ValidationAttributes
+@inject HttpClient Http
+
+<h3>Product Management với Validation</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="ValidateAllProducts">
+        <i class="bi bi-check-circle"></i> Validate All
+    </button>
+    <button class="btn btn-secondary ms-2" @onclick="ReloadData">
+        <i class="bi bi-arrow-clockwise"></i> Reload
+    </button>
+    
+    @if (ValidationStore.IsCacheLoaded("SupplierIds"))
+    {
+        <span class="ms-3 badge bg-success">
+            ✅ Cache Loaded (@ValidationStore.GetCacheCount("SupplierIds") suppliers)
+        </span>
+    }
+    else
+    {
+        <span class="ms-3 badge bg-warning">
+            ⚠️ Cache not loaded
+        </span>
+    }
+</div>
+
+<FlexGrid @ref="flexGrid"
+          ItemsSource="@collection2"
+          IsReadOnly="false"
+          AllowSorting="true"
+          ShowSort="true"
+          SelectionMode="GridSelectionMode.None"
+          HeadersVisibility="GridHeadersVisibility.All"
+          ColumnOptionsMenuVisibility="GridColumnOptionsMenuVisibility.Visible"
+          AutoGenerateColumns="false"
+          Style="@("height:500px")">
+    <FlexGridColumns>
+        <GridColumn Binding="Id"
+                    Header="ID"
+                    IsReadOnly="true"
+                    Width="80" />
+
+        <GridColumn Binding="ProductName"
+                    Header="Product Name"
+                    Width="200" />
+
+        <GridColumn Binding="SupplierId"
+                    Header="Supplier ID"
+                    Width="120" />
+    </FlexGridColumns>
+</FlexGrid>
+<C1DataPager Source="@collection2" />
+
+<style>
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 0.9rem;
+    }
+</style>
+
+@code {
+    private FlexGrid? flexGrid;
+    private List<ProductDtoTest> listData = new();
+    private int PageSize = 5;
+    C1PagedDataCollection<ProductDtoTest>? collection2;
+    C1DataCollection<ProductDtoTest>? baseCollection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        // Test data với một số items invalid
+        listData = new List<ProductDtoTest>
+        {
+            new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
+            new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 3 },
+            new ProductDtoTest { Id = 3, ProductName = "EF", SupplierId = 2 },
+            new ProductDtoTest { Id = 4, ProductName = "GH", SupplierId = 4 },
+            new ProductDtoTest { Id = 5, ProductName = "CDD", SupplierId = 5 },
+            new ProductDtoTest { Id = 6, ProductName = "", SupplierId = 6 },        // Invalid: empty name
+            new ProductDtoTest { Id = 7, ProductName = "X", SupplierId = 999 },     // Invalid: short name + invalid supplier
+            new ProductDtoTest { Id = 8, ProductName = "Product 8", SupplierId = 888 }, // Invalid: invalid supplier
+        };
+
+        baseCollection = new C1DataCollection<ProductDtoTest>(listData);
+        collection2 = new C1PagedDataCollection<ProductDtoTest>(baseCollection)
+        {
+            PageSize = PageSize
+        };
+
+        // Auto-validate on load
+        await ValidateAllProducts();
+    }
+
+    private async Task ValidateAllProducts()
+    {
+        try
+        {
+            // 1. Load supplier IDs từ API (chỉ 1 lần)
+            var supplierIds = await Http.GetFromJsonAsync<List<int>>("api/suppliers/ids");
+            if (supplierIds == null || !supplierIds.Any())
+            {
+                return;
+            }
+
+            var startTime = DateTime.Now;
+
+            // 2. ✅ LUÔN dùng MultiValidationScope (kể cả khi chỉ 1 cache)
+            using (var scope = new MultiValidationScope(autoClearOnDispose: true)
+                .LoadCache("SupplierIds", supplierIds))
+            {
+                var errors = scope.ValidateList(listData);
+
+                // 3. Gọi Validate() cho từng item để FlexGrid detect errors
+                foreach (var item in listData)
+                {
+                    item.Validate();
+                }
+
+                var duration = (DateTime.Now - startTime).TotalMilliseconds;
+                Console.WriteLine($"Validated {listData.Count} products in {duration:F2}ms - {errors.Count} errors found");
+            }
+            // Auto-cleared ✅
+
+            // Refresh grid
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Validation error: {ex.Message}");
+        }
+    }
+
+    private async Task ReloadData()
+    {
+        await LoadProducts();
+    }
+}

@@ -1,0 +1,325 @@
+@page "/product-registration"
+@using System.ComponentModel.DataAnnotations
+@using BlazorWasmHosted.Components.Components.Core
+@using BlazorWasmHosted.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Product Registration</PageTitle>
+
+<Container MaxWidth="lg" Class="py-4">
+    <Box Mb="4" TextAlign="center">
+        <h1 class="display-5">
+            <span class="bi bi-box-seam"></span> Product Registration
+        </h1>
+        <p class="lead">Register a new product in the system</p>
+    </Box>
+
+    <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        
+        <!-- Form Card -->
+        <Box Bg="white" Border="true" BorderRadius="3" Shadow="default" P="4" Mb="4">
+            <Stack Direction="column" Spacing="4">
+                
+                <!-- Basic Information Section -->
+                <Box>
+                    <h4 class="mb-3">
+                        <span class="bi bi-info-circle"></span> Basic Information
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Product Code *</label>
+                                <InputText class="form-control" @bind-Value="model.ProductCode" 
+                                          placeholder="e.g., P001" maxlength="50" />
+                                <ValidationMessage For="() => model.ProductCode" />
+                                <small class="text-muted">Unique identifier for the product</small>
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Product Name *</label>
+                                <InputText class="form-control" @bind-Value="model.ProductName" 
+                                          placeholder="Enter product name" maxlength="200" />
+                                <ValidationMessage For="() => model.ProductName" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Category *</label>
+                                <InputSelect class="form-select" @bind-Value="model.Category">
+                                    <option value="">-- Select Category --</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Books">Books</option>
+                                    <option value="Office Supplies">Office Supplies</option>
+                                    <option value="Computers">Computers</option>
+                                    <option value="Accessories">Accessories</option>
+                                    <option value="Other">Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => model.Category" />
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="6">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Supplier *</label>
+                                <InputSelect class="form-select" @bind-Value="model.SupplierId" disabled="@isLoadingSuppliers">
+                                    <option value="0">-- Select Supplier --</option>
+                                    @foreach (var supplier in suppliers)
+                                    {
+                                        <option value="@supplier.Id">@supplier.SupplierName (@supplier.SupplierCode)</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="() => model.SupplierId" />
+                                @if (isLoadingSuppliers)
+                                {
+                                    <small class="text-muted">Loading suppliers...</small>
+                                }
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Pricing & Inventory Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">
+                        <span class="bi bi-currency-dollar"></span> Pricing & Inventory
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Unit Price *</label>
+                                <InputNumber class="form-control" @bind-Value="model.UnitPrice" 
+                                           step="0.01" placeholder="0.00" />
+                                <ValidationMessage For="() => model.UnitPrice" />
+                                <small class="text-muted">Price per unit</small>
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Quantity *</label>
+                                <InputNumber class="form-control" @bind-Value="model.Quantity" 
+                                           placeholder="0" />
+                                <ValidationMessage For="() => model.Quantity" />
+                                <small class="text-muted">Available quantity</small>
+                            </Stack>
+                        </Grid>
+                        
+                        <Grid Item="true" Xs="12" Md="4">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Status</label>
+                                <Box Display="flex" AlignItems="center" Gap="2" Pt="2">
+                                    <InputCheckbox id="inStock" @bind-Value="model.InStock" class="form-check-input" />
+                                    <label for="inStock" class="form-check-label">In Stock</label>
+                                </Box>
+                                <small class="text-muted">Is the product currently in stock?</small>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Description Section -->
+                <Box Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <h4 class="mb-3">
+                        <span class="bi bi-file-text"></span> Description
+                    </h4>
+                    <Grid Container="true" Spacing="3">
+                        <Grid Item="true" Xs="12">
+                            <Stack Direction="column" Spacing="2">
+                                <label class="form-label fw-bold">Product Description</label>
+                                <InputTextArea class="form-control" rows="4" @bind-Value="model.Description" 
+                                             placeholder="Enter detailed product description..." maxlength="1000" />
+                                <ValidationMessage For="() => model.Description" />
+                                <small class="text-muted">Maximum 1000 characters</small>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+
+                <!-- Form Actions -->
+                <Box Display="flex" JustifyContent="between" Gap="3" Pt="3" style="border-top: 1px solid #dee2e6;">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="NavigateToProducts">
+                        <i class="bi bi-arrow-left"></i> Back to Products
+                    </button>
+                    <Box Display="flex" Gap="2">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Submitting...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-check-circle"></i> Register Product</span>
+                            }
+                        </button>
+                    </Box>
+                </Box>
+            </Stack>
+        </Box>
+    </EditForm>
+
+    <!-- Success Message -->
+    @if (submitted)
+    {
+        <Box Bg="success" Color="white" Border="true" BorderColor="success" BorderRadius="3" P="4" Mb="3">
+            <Stack Direction="column" Spacing="2">
+                <h4><i class="bi bi-check-circle-fill"></i> Product Registered Successfully!</h4>
+                <Box>
+                    <p class="mb-2"><strong>Product Code:</strong> @model.ProductCode</p>
+                    <p class="mb-2"><strong>Product Name:</strong> @model.ProductName</p>
+                    <p class="mb-2"><strong>Category:</strong> @model.Category</p>
+                    <p class="mb-2"><strong>Unit Price:</strong> @model.UnitPrice.ToString("C")</p>
+                    <p class="mb-2"><strong>Quantity:</strong> @model.Quantity</p>
+                    <p class="mb-2"><strong>Status:</strong> @(model.InStock ? "In Stock" : "Out of Stock")</p>
+                    @if (!string.IsNullOrEmpty(model.Description))
+                    {
+                        <p class="mb-0"><strong>Description:</strong> @model.Description</p>
+                    }
+                </Box>
+                <Box Display="flex" Gap="2" Pt="2">
+                    <button class="btn btn-light" @onclick="ResetForm">
+                        <i class="bi bi-plus-circle"></i> Register Another Product
+                    </button>
+                    <button class="btn btn-light" @onclick="NavigateToProducts">
+                        <i class="bi bi-list"></i> View All Products
+                    </button>
+                </Box>
+            </Stack>
+        </Box>
+    }
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <Box Bg="danger" Color="white" Border="true" BorderColor="danger" BorderRadius="3" P="4" Mb="3">
+            <h5><i class="bi bi-exclamation-triangle-fill"></i> Error</h5>
+            <p class="mb-0">@errorMessage</p>
+        </Box>
+    }
+</Container>
+
+@code {
+    private ProductRegistrationModel model = new();
+    private bool submitted;
+    private bool isSubmitting;
+    private bool isLoadingSuppliers = true;
+    private string? errorMessage;
+    private List<SupplierDto> suppliers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSuppliers();
+    }
+
+    private async Task LoadSuppliers()
+    {
+        try
+        {
+            isLoadingSuppliers = true;
+            var response = await Http.GetFromJsonAsync<List<SupplierDto>>("api/suppliers");
+            suppliers = response?.Where(s => s.IsActive).ToList() ?? new List<SupplierDto>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load suppliers: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingSuppliers = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            var productRequest = new CreateProductRequest(
+                ProductCode: model.ProductCode,
+                ProductName: model.ProductName,
+                Category: model.Category,
+                UnitPrice: model.UnitPrice,
+                Quantity: model.Quantity,
+                InStock: model.InStock,
+                Description: model.Description,
+                SupplierId: model.SupplierId
+            );
+
+            var response = await Http.PostAsJsonAsync("api/products", productRequest);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                submitted = true;
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to register product: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        model = new();
+        submitted = false;
+        errorMessage = null;
+    }
+
+    private void NavigateToProducts()
+    {
+        Navigation.NavigateTo("/products");
+    }
+
+    public class ProductRegistrationModel
+    {
+        [Required(ErrorMessage = "Product code is required")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Product code must be between 2 and 50 characters")]
+        [RegularExpression(@"^[A-Z0-9-]+$", ErrorMessage = "Product code must contain only uppercase letters, numbers, and hyphens")]
+        public string ProductCode { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Product name is required")]
+        [StringLength(200, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 200 characters")]
+        public string ProductName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Category is required")]
+        [StringLength(100, ErrorMessage = "Category cannot exceed 100 characters")]
+        public string Category { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Unit price is required")]
+        [Range(0.01, 999999999.99, ErrorMessage = "Unit price must be between 0.01 and 999,999,999.99")]
+        public decimal UnitPrice { get; set; }
+
+        [Required(ErrorMessage = "Quantity is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be a positive number")]
+        public int Quantity { get; set; } = 0;
+
+        public bool InStock { get; set; } = true;
+
+        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+        public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Supplier is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid supplier")]
+        public int SupplierId { get; set; }
+    }
+}
