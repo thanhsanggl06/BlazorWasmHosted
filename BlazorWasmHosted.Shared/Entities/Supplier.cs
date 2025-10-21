@@ -26,4 +26,17 @@ public class Supplier
     
     // Navigation property
     public ICollection<Product> Products { get; set; } = new List<Product>();
+
+    // Required for SearchableDropdown component
+    public override bool Equals(object? obj)
+    {
+        if (obj is Supplier other)
+            return Id == other.Id;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }

@@ -1,0 +1,526 @@
+@page "/dropdown-product-demo"
+@using BlazorWasmHosted.Components.Components.Dropdown
+@using BlazorWasmHosted.Shared.Entities
+@inject HttpClient Http
+
+<PageTitle>Product & Supplier Dropdown Demo</PageTitle>
+
+<div class="container-fluid mt-4">
+    <h3>
+        <i class="bi bi-ui-checks"></i> Searchable Dropdown - Product & Supplier Demo
+    </h3>
+    <p class="text-muted">Real-world examples with different sizes and pre-selected values</p>
+
+    <hr class="my-4" />
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading data...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Size Variations -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-rulers"></i> Different Sizes Demo
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Extra Small -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Extra Small (25%)</label>
+                                <div style="width: 100%;">
+                                    <SearchableDropdown TItem="Product"
+                                                        Items="@products.Take(5).ToList()"
+                                                        SelectedItem="@sizeXsProduct"
+                                                        SelectedItemChanged="@((item) => sizeXsProduct = item)"
+                                                        ItemTextField="@(p => p.ProductName)"
+                                                        Placeholder="Select..."
+                                                        SearchPlaceholder="Search..." />
+                                </div>
+                                @if (sizeXsProduct != null)
+                                {
+                                    <small class="text-success d-block mt-2">? @sizeXsProduct.ProductName</small>
+                                }
+                            </div>
+
+                            <!-- Small -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Small (33%)</label>
+                                <div style="width: 100%;">
+                                    <SearchableDropdown TItem="Supplier"
+                                                        Items="@suppliers"
+                                                        SelectedItem="@sizeSmSupplier"
+                                                        SelectedItemChanged="@((item) => sizeSmSupplier = item)"
+                                                        ItemTextField="@(s => s.SupplierName)"
+                                                        Placeholder="Select supplier..."
+                                                        SearchPlaceholder="Search..." />
+                                </div>
+                                @if (sizeSmSupplier != null)
+                                {
+                                    <small class="text-success d-block mt-2">? @sizeSmSupplier.SupplierName</small>
+                                }
+                            </div>
+
+                            <!-- Medium -->
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label fw-bold">Medium (42%) - Pre-selected</label>
+                                <div style="width: 100%;">
+                                    <SearchableDropdown TItem="Product"
+                                                        Items="@products"
+                                                        SelectedItem="@sizeMdProduct"
+                                                        SelectedItemChanged="@((item) => sizeMdProduct = item)"
+                                                        ItemTextField="@(p => $"{p.ProductCode} - {p.ProductName}")"
+                                                        Placeholder="Select product..."
+                                                        SearchPlaceholder="Search by code or name..." />
+                                </div>
+                                @if (sizeMdProduct != null)
+                                {
+                                    <small class="text-success d-block mt-2">
+                                        ? @sizeMdProduct.ProductName - $@sizeMdProduct.UnitPrice.ToString("N2")
+                                    </small>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Large -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Large (50%)</label>
+                                <div style="width: 100%;">
+                                    <SearchableDropdown TItem="Product"
+                                                        Items="@products"
+                                                        SelectedItem="@sizeLgProduct"
+                                                        SelectedItemChanged="@((item) => sizeLgProduct = item)"
+                                                        ItemTextField="@(p => $"{p.ProductCode} - {p.ProductName}")"
+                                                        Placeholder="Select product..."
+                                                        SearchPlaceholder="Search..." />
+                                </div>
+                            </div>
+
+                            <!-- Full Width -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Full Width (100%) - Pre-selected</label>
+                                <div style="width: 100%;">
+                                    <SearchableDropdown TItem="Supplier"
+                                                        Items="@suppliers"
+                                                        SelectedItem="@sizeFullSupplier"
+                                                        SelectedItemChanged="@((item) => sizeFullSupplier = item)"
+                                                        ItemTextField="@(s => $"{s.SupplierCode} - {s.SupplierName} ({s.Country ?? "N/A"})")"
+                                                        Placeholder="Select supplier..."
+                                                        SearchPlaceholder="Search suppliers..." />
+                                </div>
+                                @if (sizeFullSupplier != null)
+                                {
+                                    <small class="text-success d-block mt-2">
+                                        ? @sizeFullSupplier.SupplierName
+                                        @if (!string.IsNullOrEmpty(sizeFullSupplier.Email))
+                                        {
+                                            <span> - @sizeFullSupplier.Email</span>
+                                        }
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Selection Examples -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-box-seam"></i> Select Product (Default Selected)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label fw-bold">Choose a product:</label>
+                        <SearchableDropdown TItem="Product"
+                                            Items="@products"
+                                            SelectedItem="@selectedProduct"
+                                            SelectedItemChanged="@((item) => selectedProduct = item)"
+                                            ItemTextField="@(p => $"{p.ProductCode} - {p.ProductName}")"
+                                            Placeholder="Select product..."
+                                            SearchPlaceholder="Search by code or name..." />
+
+                        @if (selectedProduct != null)
+                        {
+                            <div class="alert alert-success mt-3 mb-0">
+                                <h6 class="alert-heading">Product Details</h6>
+                                <hr />
+                                <p class="mb-1"><strong>Code:</strong> @selectedProduct.ProductCode</p>
+                                <p class="mb-1"><strong>Name:</strong> @selectedProduct.ProductName</p>
+                                <p class="mb-1"><strong>Category:</strong> @selectedProduct.Category</p>
+                                <p class="mb-1"><strong>Price:</strong> $@selectedProduct.UnitPrice.ToString("N2")</p>
+                                <p class="mb-1"><strong>Quantity:</strong> @selectedProduct.Quantity</p>
+                                <p class="mb-0">
+                                    <strong>Status:</strong>
+                                    <span class="badge @(selectedProduct.InStock ? "bg-success" : "bg-danger")">
+                                        @(selectedProduct.InStock ? "In Stock" : "Out of Stock")
+                                    </span>
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-building"></i> Select Supplier (Default Selected)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label fw-bold">Choose a supplier:</label>
+                        <SearchableDropdown TItem="Supplier"
+                                            Items="@suppliers"
+                                            SelectedItem="@selectedSupplier"
+                                            SelectedItemChanged="@((item) => selectedSupplier = item)"
+                                            ItemTextField="@(s => $"{s.SupplierCode} - {s.SupplierName}")"
+                                            Placeholder="Select supplier..."
+                                            SearchPlaceholder="Search suppliers..." />
+
+                        @if (selectedSupplier != null)
+                        {
+                            <div class="alert alert-info mt-3 mb-0">
+                                <h6 class="alert-heading">Supplier Details</h6>
+                                <hr />
+                                <p class="mb-1"><strong>Code:</strong> @selectedSupplier.SupplierCode</p>
+                                <p class="mb-1"><strong>Name:</strong> @selectedSupplier.SupplierName</p>
+                                @if (!string.IsNullOrEmpty(selectedSupplier.ContactPerson))
+                                {
+                                    <p class="mb-1"><strong>Contact:</strong> @selectedSupplier.ContactPerson</p>
+                                }
+                                @if (!string.IsNullOrEmpty(selectedSupplier.Email))
+                                {
+                                    <p class="mb-1"><strong>Email:</strong> @selectedSupplier.Email</p>
+                                }
+                                @if (!string.IsNullOrEmpty(selectedSupplier.Phone))
+                                {
+                                    <p class="mb-1"><strong>Phone:</strong> @selectedSupplier.Phone</p>
+                                }
+                                <p class="mb-0">
+                                    <strong>Status:</strong>
+                                    <span class="badge @(selectedSupplier.IsActive ? "bg-success" : "bg-secondary")">
+                                        @(selectedSupplier.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Products by Category -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">
+                            <i class="bi bi-funnel"></i> Filter Products by Category (Dependent Dropdown)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Select Category:</label>
+                                <SearchableDropdown TItem="string"
+                                                    Items="@categories"
+                                                    SelectedItem="@selectedCategory"
+                                                    SelectedItemChanged="@OnCategoryChanged"
+                                                    ItemTextField="@(c => c)"
+                                                    Placeholder="All categories"
+                                                    SearchPlaceholder="Filter categories..." />
+                            </div>
+
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold">
+                                    Select Product from Category:
+                                    @if (!string.IsNullOrEmpty(selectedCategory))
+                                    {
+                                        <span class="badge bg-primary">@filteredProducts.Count items</span>
+                                    }
+                                </label>
+                                <SearchableDropdown TItem="Product"
+                                                    Items="@filteredProducts"
+                                                    SelectedItem="@selectedFilteredProduct"
+                                                    SelectedItemChanged="@((item) => selectedFilteredProduct = item)"
+                                                    ItemTextField="@(p => $"{p.ProductName} - ${p.UnitPrice:N2}")"
+                                                    Placeholder="Select product..."
+                                                    SearchPlaceholder="Search products..."
+                                                    Disabled="@string.IsNullOrEmpty(selectedCategory)" />
+                            </div>
+                        </div>
+
+                        @if (selectedFilteredProduct != null)
+                        {
+                            <div class="alert alert-warning">
+                                <strong>Selected:</strong> @selectedFilteredProduct.ProductName
+                                (@selectedFilteredProduct.Category) - $@selectedFilteredProduct.UnitPrice.ToString("N2")
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products by Supplier -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-box-arrow-in-down"></i> View Products by Supplier (Dependent Dropdown)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label fw-bold">Select Supplier:</label>
+                                <SearchableDropdown TItem="Supplier"
+                                                    Items="@suppliers"
+                                                    SelectedItem="@selectedSupplierForProducts"
+                                                    SelectedItemChanged="@OnSupplierForProductsChanged"
+                                                    ItemTextField="@(s => s.SupplierName)"
+                                                    Placeholder="Select supplier..."
+                                                    SearchPlaceholder="Search suppliers..." />
+                            </div>
+
+                            <div class="col-md-7 mb-3">
+                                <label class="form-label fw-bold">
+                                    Products from this Supplier:
+                                    @if (selectedSupplierForProducts != null)
+                                    {
+                                        <span class="badge bg-danger">@supplierProducts.Count products</span>
+                                    }
+                                </label>
+                                <SearchableDropdown TItem="Product"
+                                                    Items="@supplierProducts"
+                                                    SelectedItem="@selectedSupplierProduct"
+                                                    SelectedItemChanged="@((item) => selectedSupplierProduct = item)"
+                                                    ItemTextField="@(p => $"{p.ProductCode} - {p.ProductName}")"
+                                                    Placeholder="Select product..."
+                                                    SearchPlaceholder="Search products..."
+                                                    Disabled="@(selectedSupplierForProducts == null)" />
+                            </div>
+                        </div>
+
+                        @if (selectedSupplierForProducts != null && selectedSupplierProduct != null)
+                        {
+                            <div class="alert alert-danger">
+                                <strong>Selected Product:</strong> @selectedSupplierProduct.ProductName <br />
+                                <strong>From Supplier:</strong> @selectedSupplierForProducts.SupplierName <br />
+                                <strong>Price:</strong> $@selectedSupplierProduct.UnitPrice.ToString("N2")
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart"></i> Data Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h2 class="text-primary">@products.Count</h2>
+                                        <p class="mb-0">Total Products</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h2 class="text-success">@suppliers.Count</h2>
+                                        <p class="mb-0">Total Suppliers</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h2 class="text-info">@categories.Count</h2>
+                                        <p class="mb-0">Categories</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h2 class="text-warning">@products.Count(p => p.InStock)</h2>
+                                        <p class="mb-0">In Stock</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private List<Product> products = new();
+    private List<Supplier> suppliers = new();
+    private List<string> categories = new();
+
+    // Size demo variables
+    private Product? sizeXsProduct;
+    private Supplier? sizeSmSupplier;
+    private Product? sizeMdProduct;
+    private Product? sizeLgProduct;
+    private Supplier? sizeFullSupplier;
+
+    // Single selections with defaults
+    private Product? selectedProduct;
+    private Supplier? selectedSupplier;
+
+    // Category filter
+    private string? selectedCategory;
+    private List<Product> filteredProducts = new();
+    private Product? selectedFilteredProduct;
+
+    // Supplier products
+    private Supplier? selectedSupplierForProducts;
+    private List<Product> supplierProducts = new();
+    private Product? selectedSupplierProduct;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+
+            // Load products and suppliers from API
+            var productsTask = Http.GetFromJsonAsync<List<Product>>("api/products");
+            var suppliersTask = Http.GetFromJsonAsync<List<Supplier>>("api/suppliers");
+
+            await Task.WhenAll(productsTask, suppliersTask);
+
+            products = productsTask.Result ?? new();
+            suppliers = suppliersTask.Result ?? new();
+
+            // Extract unique categories
+            categories = products
+                .Select(p => p.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            // Set default values
+            SetDefaultValues();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SetDefaultValues()
+    {
+        // Size demo defaults
+        sizeXsProduct = products.FirstOrDefault();
+        sizeMdProduct = products.Skip(1).FirstOrDefault();
+        sizeFullSupplier = suppliers.FirstOrDefault();
+
+        // Main selections defaults
+        selectedProduct = products.Skip(2).FirstOrDefault();
+        selectedSupplier = suppliers.Skip(1).FirstOrDefault();
+
+        // Category filter default
+        if (categories.Any())
+        {
+            selectedCategory = categories.First();
+            filteredProducts = products
+                .Where(p => p.Category == selectedCategory)
+                .ToList();
+            selectedFilteredProduct = filteredProducts.FirstOrDefault();
+        }
+
+        // Supplier products default
+        if (suppliers.Any())
+        {
+            selectedSupplierForProducts = suppliers.Skip(2).FirstOrDefault() ?? suppliers.FirstOrDefault();
+            if (selectedSupplierForProducts != null)
+            {
+                supplierProducts = products
+                    .Where(p => p.SupplierId == selectedSupplierForProducts.Id)
+                    .ToList();
+                selectedSupplierProduct = supplierProducts.FirstOrDefault();
+            }
+        }
+    }
+
+    private async Task OnCategoryChanged(string category)
+    {
+        selectedCategory = category;
+        selectedFilteredProduct = null;
+
+        if (!string.IsNullOrEmpty(category))
+        {
+            filteredProducts = products
+                .Where(p => p.Category == category)
+                .ToList();
+        }
+        else
+        {
+            filteredProducts = new();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnSupplierForProductsChanged(Supplier supplier)
+    {
+        selectedSupplierForProducts = supplier;
+        selectedSupplierProduct = null;
+
+        if (supplier != null)
+        {
+            supplierProducts = products
+                .Where(p => p.SupplierId == supplier.Id)
+                .ToList();
+        }
+        else
+        {
+            supplierProducts = new();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+}
