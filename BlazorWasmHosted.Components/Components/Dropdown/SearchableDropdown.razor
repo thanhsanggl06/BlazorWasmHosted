@@ -1,8 +1,9 @@
 @typeparam TItem
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.JSInterop
+@implements IAsyncDisposable
 
-<div class="searchable-dropdown @(IsOpen ? "open" : "")" @ref="dropdownRef">
+<div class="searchable-dropdown @(IsOpen ? "open" : "")" @ref="dropdownRef" @onclick:stopPropagation="true">
     <!-- Trigger Button -->
     <button type="button" 
             class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
@@ -76,10 +77,14 @@
     [Parameter] public string SearchPlaceholder { get; set; } = "Search...";
     [Parameter] public bool Disabled { get; set; }
 
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
     private bool IsOpen { get; set; }
     private string searchText = "";
     private ElementReference dropdownRef;
     private ElementReference searchInputRef;
+    private DotNetObjectReference<SearchableDropdown<TItem>>? dotNetRef;
+    private IJSObjectReference? jsModule;
 
     private IEnumerable<TItem> FilteredItems
     {
@@ -93,13 +98,51 @@
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Add click outside handler
-        if (JSRuntime != null)
+        if (firstRender)
         {
-            // Will be handled by parent page
+            try
+            {
+                dotNetRef = DotNetObjectReference.Create(this);
+                jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/dropdown.js");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing dropdown: {ex.Message}");
+            }
         }
+
+        if (IsOpen && jsModule != null && dotNetRef != null)
+        {
+            try
+            {
+                await jsModule.InvokeVoidAsync("addClickOutsideListener", dropdownRef, dotNetRef);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding click listener: {ex.Message}");
+            }
+        }
+        else if (!IsOpen && jsModule != null)
+        {
+            try
+            {
+                await jsModule.InvokeVoidAsync("removeClickOutsideListener");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error removing click listener: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public void CloseDropdown()
+    {
+        IsOpen = false;
+        searchText = "";
+        StateHasChanged();
     }
 
     private string GetDisplayText()
@@ -150,5 +193,20 @@
         StateHasChanged();
     }
 
-    [Inject] private IJSRuntime? JSRuntime { get; set; }
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (jsModule != null)
+            {
+                await jsModule.InvokeVoidAsync("removeClickOutsideListener");
+                await jsModule.DisposeAsync();
+            }
+            dotNetRef?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error disposing dropdown: {ex.Message}");
+        }
+    }
 }

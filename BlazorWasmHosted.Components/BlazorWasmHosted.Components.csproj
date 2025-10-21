@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.20" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorWasmHosted.Shared\BlazorWasmHosted.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

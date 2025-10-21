@@ -1,0 +1,439 @@
+@page "/supplier-dropdown-demo"
+@using BlazorWasmHosted.Components.Components.Dropdown
+@using BlazorWasmHosted.Shared.Entities
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>SupplierDropdown Demo</PageTitle>
+
+<div class="container mt-4">
+    <h3>
+        <i class="bi bi-building-check"></i> SupplierDropdown Component Demo
+    </h3>
+    <p class="text-muted">Easy-to-use supplier dropdown with auto-load and click-outside features</p>
+
+    <hr class="my-4" />
+
+    <!-- Example 1: Basic Usage -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-1-circle"></i> Basic Usage
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <label class="form-label fw-bold">Select Supplier:</label>
+                    <SupplierDropdown SelectedSupplier="@basicSupplier"
+                                      SelectedSupplierChanged="@((s) => basicSupplier = s)" />
+
+                    @if (basicSupplier != null)
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            <h6 class="alert-heading">Selected Supplier</h6>
+                            <hr />
+                            <p class="mb-0"><strong>Name:</strong> @basicSupplier.SupplierName</p>
+                            <p class="mb-0"><strong>Code:</strong> @basicSupplier.SupplierCode</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Default format: Code + Name</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example 2: Name Only Format -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-2-circle"></i> Name Only Format
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <label class="form-label fw-bold">Select Supplier:</label>
+                    <SupplierDropdown SelectedSupplier="@nameOnlySupplier"
+                                      SelectedSupplierChanged="@((s) => nameOnlySupplier = s)"
+                                      DisplayFormat="SupplierDropdown.SupplierDisplayFormat.NameOnly"
+                                      Placeholder="Choose supplier..."
+                                      SearchPlaceholder="Type to search..." />
+
+                    @if (nameOnlySupplier != null)
+                    {
+                        <div class="alert alert-success mt-3 mb-0">
+                            <strong>Selected:</strong> @nameOnlySupplier.SupplierName
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Display: Name only (clean)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example 3: Different Display Formats -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-3-circle"></i> All Display Formats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">1. Name Only</label>
+                            <SupplierDropdown SelectedSupplier="@format1Supplier"
+                                              SelectedSupplierChanged="@((s) => format1Supplier = s)"
+                                              DisplayFormat="SupplierDropdown.SupplierDisplayFormat.NameOnly" />
+                            @if (format1Supplier != null)
+                            {
+                                <small class="text-success d-block mt-2">? @format1Supplier.SupplierName</small>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">2. Code + Name</label>
+                            <SupplierDropdown SelectedSupplier="@format2Supplier"
+                                              SelectedSupplierChanged="@((s) => format2Supplier = s)"
+                                              DisplayFormat="SupplierDropdown.SupplierDisplayFormat.CodeAndName" />
+                            @if (format2Supplier != null)
+                            {
+                                <small class="text-success d-block mt-2">? @format2Supplier.SupplierCode - @format2Supplier.SupplierName</small>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">3. Name + Country</label>
+                            <SupplierDropdown SelectedSupplier="@format3Supplier"
+                                              SelectedSupplierChanged="@((s) => format3Supplier = s)"
+                                              DisplayFormat="SupplierDropdown.SupplierDisplayFormat.NameWithCountry" />
+                            @if (format3Supplier != null)
+                            {
+                                <small class="text-success d-block mt-2">? @format3Supplier.SupplierName (@(format3Supplier.Country ?? "N/A"))</small>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">4. Full (Code + Name + Country)</label>
+                            <SupplierDropdown SelectedSupplier="@format4Supplier"
+                                              SelectedSupplierChanged="@((s) => format4Supplier = s)"
+                                              DisplayFormat="SupplierDropdown.SupplierDisplayFormat.Full" />
+                            @if (format4Supplier != null)
+                            {
+                                <small class="text-success d-block mt-2">
+                                    ? @format4Supplier.SupplierCode - @format4Supplier.SupplierName (@(format4Supplier.Country ?? "N/A"))
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example 4: In a Form -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="bi bi-4-circle"></i> In a Form (Purchase Order)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@orderForm" OnValidSubmit="@HandleSubmit">
+                        <DataAnnotationsValidator />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Order Number *</label>
+                                <InputText @bind-Value="orderForm.OrderNumber" class="form-control" />
+                                <ValidationMessage For="@(() => orderForm.OrderNumber)" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Order Date *</label>
+                                <InputDate @bind-Value="orderForm.OrderDate" class="form-control" />
+                                <ValidationMessage For="@(() => orderForm.OrderDate)" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Supplier *</label>
+                            <SupplierDropdown SelectedSupplier="@orderForm.Supplier"
+                                              SelectedSupplierChanged="@((s) => orderForm.Supplier = s)"
+                                              DisplayFormat="SupplierDropdown.SupplierDisplayFormat.CodeAndName"
+                                              Disabled="@isSubmitting" />
+                            @if (orderForm.Supplier == null && formSubmitted)
+                            {
+                                <div class="text-danger mt-1">
+                                    <small>Supplier is required</small>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <InputTextArea @bind-Value="orderForm.Notes" class="form-control" rows="3" />
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-check-circle me-1"></i>
+                                Submit Order
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Reset
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    @if (orderSubmitted)
+                    {
+                        <div class="alert alert-success mt-3">
+                            <h6 class="alert-heading">Order Submitted Successfully!</h6>
+                            <hr />
+                            <p class="mb-1"><strong>Order Number:</strong> @orderForm.OrderNumber</p>
+                            <p class="mb-1"><strong>Supplier:</strong> @orderForm.Supplier?.SupplierName</p>
+                            <p class="mb-0"><strong>Date:</strong> @orderForm.OrderDate.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example 5: Disabled State -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-5-circle"></i> Disabled State
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enableToggle" 
+                               @bind="isDropdownEnabled" />
+                        <label class="form-check-label" for="enableToggle">
+                            Enable Dropdown
+                        </label>
+                    </div>
+
+                    <label class="form-label fw-bold">Select Supplier:</label>
+                    <SupplierDropdown SelectedSupplier="@disabledSupplier"
+                                      SelectedSupplierChanged="@((s) => disabledSupplier = s)"
+                                      Disabled="@(!isDropdownEnabled)" />
+
+                    @if (disabledSupplier != null)
+                    {
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <strong>Selected:</strong> @disabledSupplier.SupplierName
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Example 6: Multiple Dropdowns -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-6-circle"></i> Multiple Dropdowns
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Primary Supplier:</label>
+                        <SupplierDropdown SelectedSupplier="@primarySupplier"
+                                          SelectedSupplierChanged="@((s) => primarySupplier = s)"
+                                          DisplayFormat="SupplierDropdown.SupplierDisplayFormat.NameOnly" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Backup Supplier:</label>
+                        <SupplierDropdown SelectedSupplier="@backupSupplier"
+                                          SelectedSupplierChanged="@((s) => backupSupplier = s)"
+                                          DisplayFormat="SupplierDropdown.SupplierDisplayFormat.NameOnly" />
+                    </div>
+
+                    @if (primarySupplier != null && backupSupplier != null)
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <small>
+                                <strong>Primary:</strong> @primarySupplier.SupplierName<br />
+                                <strong>Backup:</strong> @backupSupplier.SupplierName
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features & Code Examples -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-code-slash"></i> Usage Examples
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Basic Usage:</h6>
+                    <pre class="bg-light p-3 rounded"><code>&lt;SupplierDropdown SelectedSupplier="@@supplier"
+                  SelectedSupplierChanged="@@((s) => supplier = s)" /&gt;
+
+@@code {
+    private Supplier? supplier;
+}</code></pre>
+
+                    <h6 class="fw-bold mb-3 mt-4">With Display Format:</h6>
+                    <pre class="bg-light p-3 rounded"><code>&lt;SupplierDropdown SelectedSupplier="@@supplier"
+                  SelectedSupplierChanged="@@((s) => supplier = s)"
+                  DisplayFormat="SupplierDropdown.SupplierDisplayFormat.Full"
+                  Placeholder="Choose supplier..."
+                  SearchPlaceholder="Type to search..." /&gt;</code></pre>
+
+                    <h6 class="fw-bold mb-3 mt-4">In a Form:</h6>
+                    <pre class="bg-light p-3 rounded"><code>&lt;EditForm Model="@@model"&gt;
+    &lt;div class="mb-3"&gt;
+        &lt;label&gt;Supplier&lt;/label&gt;
+        &lt;SupplierDropdown SelectedSupplier="@@model.Supplier"
+                          SelectedSupplierChanged="@@((s) => model.Supplier = s)" /&gt;
+    &lt;/div&gt;
+&lt;/EditForm&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star-fill"></i> Component Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">? Built-in Features</h6>
+                            <ul>
+                                <li><strong>Auto-load:</strong> T? ð?ng load suppliers t? API</li>
+                                <li><strong>Click outside:</strong> Click bên ngoài ð? ðóng dropdown</li>
+                                <li><strong>Search:</strong> T?m ki?m realtime</li>
+                                <li><strong>Keyboard:</strong> ESC ð? ðóng</li>
+                                <li><strong>4 Display formats:</strong> Linh ho?t hi?n th?</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-success">? Easy to Use</h6>
+                            <ul>
+                                <li><strong>1 line code:</strong> Không c?n setup ph?c t?p</li>
+                                <li><strong>No manual loading:</strong> Component t? load data</li>
+                                <li><strong>Type-safe:</strong> Strongly-typed Supplier</li>
+                                <li><strong>Reusable:</strong> Dùng nhi?u l?n trong page</li>
+                                <li><strong>Customizable:</strong> Nhi?u parameters ði?u ch?nh</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Example 1: Basic
+    private Supplier? basicSupplier;
+
+    // Example 2: Name Only
+    private Supplier? nameOnlySupplier;
+
+    // Example 3: Different formats
+    private Supplier? format1Supplier;
+    private Supplier? format2Supplier;
+    private Supplier? format3Supplier;
+    private Supplier? format4Supplier;
+
+    // Example 4: Form
+    private OrderFormModel orderForm = new();
+    private bool isSubmitting = false;
+    private bool orderSubmitted = false;
+    private bool formSubmitted = false;
+
+    // Example 5: Disabled
+    private bool isDropdownEnabled = true;
+    private Supplier? disabledSupplier;
+
+    // Example 6: Multiple
+    private Supplier? primarySupplier;
+    private Supplier? backupSupplier;
+
+    private async Task HandleSubmit()
+    {
+        formSubmitted = true;
+
+        if (orderForm.Supplier == null)
+        {
+            return;
+        }
+
+        try
+        {
+            isSubmitting = true;
+            
+            // Simulate API call
+            await Task.Delay(1500);
+            
+            orderSubmitted = true;
+            
+            // Auto-hide success message after 5 seconds
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                orderSubmitted = false;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        orderForm = new();
+        orderSubmitted = false;
+        formSubmitted = false;
+    }
+
+    private class OrderFormModel
+    {
+        [Required(ErrorMessage = "Order number is required")]
+        public string OrderNumber { get; set; } = $"PO{DateTime.Now:yyyyMMddHHmmss}";
+
+        [Required(ErrorMessage = "Order date is required")]
+        public DateTime OrderDate { get; set; } = DateTime.Now;
+
+        public Supplier? Supplier { get; set; }
+
+        public string? Notes { get; set; }
+    }
+}
