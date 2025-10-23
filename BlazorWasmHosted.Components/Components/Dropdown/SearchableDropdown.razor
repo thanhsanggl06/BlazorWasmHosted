@@ -3,38 +3,41 @@
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 
-<div class="searchable-dropdown @(IsOpen ? "open" : "")" @ref="dropdownRef" @onclick:stopPropagation="true">
-    <!-- Trigger Button -->
+<div class="position-relative" @ref="dropdownRef" @onclick:stopPropagation="true">
     <button type="button" 
-            class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
+            class="form-select text-start"
+            style="cursor: pointer;"
             @onclick="ToggleDropdown"
-            @onclick:stopPropagation="true">
-        <span>@GetDisplayText()</span>
-        <i class="bi bi-chevron-down ms-2"></i>
+            @onclick:stopPropagation="true"
+            disabled="@Disabled">
+        @GetDisplayText()
     </button>
 
-    <!-- Dropdown Menu -->
     @if (IsOpen)
     {
-        <div class="dropdown-menu show w-100 shadow-lg" @onclick:stopPropagation="true">
-            <!-- Search Box -->
-            <div class="dropdown-search">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" 
-                           class="form-control border-start-0 ps-0"
-                           placeholder="@SearchPlaceholder"
-                           @bind="searchText"
-                           @bind:event="oninput"
-                           @onkeydown="OnSearchKeyDown"
-                           @ref="searchInputRef" />
-                </div>
+        <div class="dropdown-menu show w-100 shadow" style="max-height: 300px; overflow: hidden;" @onclick:stopPropagation="true">
+            <div class="p-2 border-bottom">
+                <input type="text" 
+                       class="form-control form-control-sm"
+                       placeholder="@SearchPlaceholder"
+                       @bind="searchText"
+                       @bind:event="oninput"
+                       @onkeydown="OnSearchKeyDown"
+                       @ref="searchInputRef"
+                       autocomplete="off" />
             </div>
 
-            <!-- Dropdown Items -->
-            <div class="dropdown-items">
+            <div style="max-height: 250px; overflow-y: auto;">
+                @if (AllowClear && SelectedItem != null)
+                {
+                    <button type="button"
+                            class="dropdown-item text-danger"
+                            @onclick="ClearSelection">
+                        <i class="bi bi-x-circle me-2"></i>Clear selection
+                    </button>
+                    <div class="dropdown-divider"></div>
+                }
+
                 @if (FilteredItems.Any())
                 {
                     @foreach (var item in FilteredItems)
@@ -46,20 +49,21 @@
                                 @onclick="() => SelectItem(item)">
                             @if (!string.IsNullOrEmpty(itemColor))
                             {
-                                <span class="item-color-indicator" style="background-color: @itemColor"></span>
+                                <span class="rounded-circle me-2" 
+                                      style="width: 16px; height: 16px; background-color: @itemColor; border: 1px solid rgba(0,0,0,0.1);"></span>
                             }
-                            <span class="item-text">@GetItemText(item)</span>
+                            <span class="flex-grow-1 text-truncate">@GetItemText(item)</span>
                             @if (isSelected)
                             {
-                                <i class="bi bi-check ms-auto"></i>
+                                <i class="bi bi-check ms-2"></i>
                             }
                         </button>
                     }
                 }
                 else
                 {
-                    <div class="dropdown-item text-muted">
-                        <i class="bi bi-exclamation-circle me-2"></i>No results found
+                    <div class="dropdown-item text-muted disabled">
+                        No results found
                     </div>
                 }
             </div>
@@ -73,9 +77,10 @@
     [Parameter] public List<TItem> Items { get; set; } = new();
     [Parameter] public Func<TItem, string> ItemTextField { get; set; } = item => item?.ToString() ?? "";
     [Parameter] public Func<TItem, string>? ItemColorField { get; set; }
-    [Parameter] public string Placeholder { get; set; } = "???";
+    [Parameter] public string Placeholder { get; set; } = "Select...";
     [Parameter] public string SearchPlaceholder { get; set; } = "Search...";
     [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool AllowClear { get; set; } = false;
 
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -107,10 +112,7 @@
                 dotNetRef = DotNetObjectReference.Create(this);
                 jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/dropdown.js");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing dropdown: {ex.Message}");
-            }
+            catch { }
         }
 
         if (IsOpen && jsModule != null && dotNetRef != null)
@@ -119,10 +121,7 @@
             {
                 await jsModule.InvokeVoidAsync("addClickOutsideListener", dropdownRef, dotNetRef);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding click listener: {ex.Message}");
-            }
+            catch { }
         }
         else if (!IsOpen && jsModule != null)
         {
@@ -130,10 +129,7 @@
             {
                 await jsModule.InvokeVoidAsync("removeClickOutsideListener");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error removing click listener: {ex.Message}");
-            }
+            catch { }
         }
     }
 
@@ -177,6 +173,14 @@
         searchText = "";
     }
 
+    private async Task ClearSelection()
+    {
+        SelectedItem = default;
+        await SelectedItemChanged.InvokeAsync(default!);
+        IsOpen = false;
+        searchText = "";
+    }
+
     private void OnSearchKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Escape")
@@ -204,9 +208,6 @@
             }
             dotNetRef?.Dispose();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error disposing dropdown: {ex.Message}");
-        }
+        catch { }
     }
 }
