@@ -21,4 +21,8 @@
     <ProjectReference Include="..\BlazorWasmHosted.Shared\BlazorWasmHosted.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\DateInput\" />
+  </ItemGroup>
+
 </Project>
