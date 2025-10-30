@@ -27,11 +27,14 @@ public abstract class DatabaseExistsValidationAttribute<T> : ValidationAttribute
             );
         }
 
+        
+
         // Check if value exists in cache
         if (value is T typedValue)
         {
             if (!ValidationStore.Contains(CacheKey, typedValue))
             {
+
                 return new ValidationResult(
                     ErrorMessage ?? $"{EntityName} '{typedValue}' không tồn tại trong hệ thống",
                     new[] { validationContext.MemberName ?? string.Empty }

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using BlazorWasmHosted.Shared.ValidationAttributes;
+using System.Collections.Generic;
 
 public record ProductDto(
     int Id,
@@ -41,22 +42,60 @@ public record UpdateProductRequest(
     int SupplierId
 );
 
-public class ProductDtoTest : ObservableValidator
+public class ProductDtoTest :  ObservableValidator
 {
-    public int Id { get; set; }
+    private int id;
+
+    [CustomValidation(typeof(ProductDtoTest), nameof(ValidatePrimaryKey))]
+    public int Id
+    {
+        get => this.id;
+        set => SetProperty(ref this.id, value, true);
+    }
 
     [Required(ErrorMessage = "Tên không được để trống")]
     [MinLength(2, ErrorMessage = "Tên phải ít nhất 2 ký tự")]
     public string ProductName { get; set; } = string.Empty;
     
+    private int supplierId;
+
     [SupplierExists(ErrorMessage = "Supplier ID không tồn tại trong hệ thống")]
-    public int SupplierId { get; set; }
+    [CustomValidation(typeof(ProductDtoTest), nameof(ValidatePrimaryKey))]
+    public int SupplierId
+    {
+        get => this.supplierId;
+        set => SetProperty(ref this.supplierId, value, true);
+    }
+
 
     // For UI display
     public bool IsValid { get; set; } = true;
 
+    public string PrimaryKey => Id.ToString() + "_" + SupplierId.ToString();
+
     public void Validate()
     {
+
         ValidateAllProperties();
     }
+
+    public static ValidationResult? ValidatePrimaryKey(object value, ValidationContext context)
+    {
+        var instance = context.ObjectInstance as ProductDtoTest;
+        if (instance == null)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (!instance.PrimaryKey.Equals("8_888"))
+        {
+            return ValidationResult.Success;
+        }
+
+        return new ValidationResult(
+            "Primary key 8_888 đã tồn tại",
+            new[] { nameof(Id), nameof(SupplierId) }
+        );
+    }
+    
 }

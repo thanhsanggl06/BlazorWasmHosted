@@ -1,12 +1,16 @@
-Ôªø@page "/products-review"
+@page "/products-review"
 @using C1.Blazor.Grid
 @using C1.Blazor.Core
 @using C1.DataCollection
 @using C1.Blazor.DataPager
 @using BlazorWasmHosted.Shared.ValidationAttributes
-@inject HttpClient Http
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.JSInterop
 
-<h3>Product Management v·ªõi Validation</h3>
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h3>Product Management v?i Validation</h3>
 
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="ValidateAllProducts">
@@ -19,19 +23,20 @@
     @if (ValidationStore.IsCacheLoaded("SupplierIds"))
     {
         <span class="ms-3 badge bg-success">
-            ‚úÖ Cache Loaded (@ValidationStore.GetCacheCount("SupplierIds") suppliers)
+            ? Cache Loaded (@ValidationStore.GetCacheCount("SupplierIds") suppliers)
         </span>
     }
     else
     {
         <span class="ms-3 badge bg-warning">
-            ‚ö†Ô∏è Cache not loaded
+            ?? Cache not loaded
         </span>
     }
 </div>
 
 <FlexGrid @ref="flexGrid"
           ItemsSource="@collection2"
+          CellFactory="@errorIconFactory"
           IsReadOnly="false"
           AllowSorting="true"
           ShowSort="true"
@@ -58,10 +63,92 @@
 <C1DataPager Source="@collection2" />
 
 <style>
-    pre {
-        white-space: pre-wrap;
+    .error-icon {
+        cursor: pointer;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .error-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: #dc3545;
+    }
+
+    .error-icon:hover svg {
+        fill: #c82333;
+    }
+
+    .error-message-box {
+        display: none;
+        position: fixed;
+        background: #fff;
+        border: 2px solid #dc3545;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        z-index: 9999;
+        width: 320px;
+        max-width: calc(100vw - 40px);
+        font-size: 0.875rem;
+    }
+
+    .error-message-box.show {
+        display: block;
+    }
+
+    /* M?i tÍn tr? lÍn */
+    .error-message-box::before {
+        content: '';
+        position: absolute;
+        top: -11px;
+        left: 20px;
+        width: 0;
+        height: 0;
+        border-left: 11px solid transparent;
+        border-right: 11px solid transparent;
+        border-bottom: 11px solid #dc3545;
+    }
+
+    .error-message-box::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 22px;
+        width: 0;
+        height: 0;
+        border-left: 9px solid transparent;
+        border-right: 9px solid transparent;
+        border-bottom: 9px solid #fff;
+    }
+
+    .error-message-item {
+        padding: 0.5rem 0;
+        padding-left: 1.25rem;
+        position: relative;
         word-wrap: break-word;
-        font-size: 0.9rem;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+        line-height: 1.4;
+    }
+
+    .error-message-item:before {
+        content: "ï";
+        position: absolute;
+        left: 0.375rem;
+        top: 0.5rem;
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .row-header-container {
+        position: relative;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
     }
 </style>
 
@@ -79,7 +166,7 @@
 
     private async Task LoadProducts()
     {
-        // Test data v·ªõi m·ªôt s·ªë items invalid
+        // Test data v?i m?t s? items invalid
         listData = new List<ProductDtoTest>
         {
             new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
@@ -106,7 +193,7 @@
     {
         try
         {
-            // 1. Load supplier IDs t·ª´ API (ch·ªâ 1 l·∫ßn)
+            // 1. Load supplier IDs t? API (ch? 1 l?n)
             var supplierIds = await Http.GetFromJsonAsync<List<int>>("api/suppliers/ids");
             if (supplierIds == null || !supplierIds.Any())
             {
@@ -115,13 +202,13 @@
 
             var startTime = DateTime.Now;
 
-            // 2. ‚úÖ LU√îN d√πng MultiValidationScope (k·ªÉ c·∫£ khi ch·ªâ 1 cache)
+            // 2. ? LU‘N d˘ng MultiValidationScope (k? c? khi ch? 1 cache)
             using (var scope = new MultiValidationScope(autoClearOnDispose: true)
                 .LoadCache("SupplierIds", supplierIds))
             {
                 var errors = scope.ValidateList(listData);
 
-                // 3. G·ªçi Validate() cho t·ª´ng item ƒë·ªÉ FlexGrid detect errors
+                // 3. G?i Validate() cho t?ng item ? FlexGrid detect errors
                 foreach (var item in listData)
                 {
                     item.Validate();
@@ -130,7 +217,7 @@
                 var duration = (DateTime.Now - startTime).TotalMilliseconds;
                 Console.WriteLine($"Validated {listData.Count} products in {duration:F2}ms - {errors.Count} errors found");
             }
-            // Auto-cleared ‚úÖ
+            // Auto-cleared ?
 
             // Refresh grid
             await InvokeAsync(StateHasChanged);
@@ -144,5 +231,191 @@
     private async Task ReloadData()
     {
         await LoadProducts();
+    }
+
+    ErrorIconFactory errorIconFactory = new ErrorIconFactory();
+
+    public class ErrorIconFactory : GridCellFactory
+    {
+        public override RenderFragment GetCellContentRenderFragment(
+            GridCellType cellType,
+            GridCellRange range)
+        {
+            if (cellType == GridCellType.RowHeader && Grid != null)
+            {
+                var item = Grid.Rows[range.Row]?.DataItem as ProductDtoTest;
+                if (item != null)
+                {
+                    // L?y validation errors
+                    var validationContext = new ValidationContext(item);
+                    var validationResults = new List<ValidationResult>();
+                    Validator.TryValidateObject(item, validationContext, validationResults, true);
+
+                    // CH? render khi cÛ l?i
+                    if (validationResults.Any())
+                    {
+                        return builder =>
+                        {
+                            var msgId = $"error_msg_{item.Id}_{item.SupplierId}";
+                            var iconId = $"error_icon_{item.Id}_{item.SupplierId}";
+
+                            builder.OpenElement(0, "div");
+                            builder.AddAttribute(1, "class", "row-header-container");
+
+                            // SVG Icon
+                            builder.OpenElement(2, "div");
+                            builder.AddAttribute(3, "class", "error-icon");
+                            builder.AddAttribute(4, "id", iconId);
+                            builder.AddAttribute(5, "title", $"{validationResults.Count} l?i - Click ? xem chi ti?t");
+
+                            // SVG Error Icon
+                            builder.AddMarkupContent(6, 
+                                @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16"">
+                                    <path d=""M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM7 4h2v5H7V4zm0 6h2v2H7v-2z""/>
+                                  </svg>");
+
+                            builder.CloseElement(); // error-icon
+
+                            // Message Box v?i Bootstrap classes
+                            builder.OpenElement(7, "div");
+                            builder.AddAttribute(8, "id", msgId);
+                            builder.AddAttribute(9, "class", "error-message-box");
+
+                            // Header v?i Bootstrap
+                            builder.OpenElement(10, "div");
+                            builder.AddAttribute(11, "class", "d-flex align-items-center text-danger fw-bold border-bottom border-danger pb-2 mb-3 p-3");
+                            builder.AddMarkupContent(12, 
+                                @"<svg xmlns=""http://www.w3.org/2000/svg"" width=""18"" height=""18"" fill=""currentColor"" viewBox=""0 0 16 16"" class=""me-2"">
+                                    <path d=""M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM7 4h2v5H7V4zm0 6h2v2H7v-2z""/>
+                                  </svg>");
+                            builder.AddContent(13, $"L?i Validation ({validationResults.Count})");
+                            builder.CloseElement();
+
+                            // Content
+                            builder.OpenElement(14, "div");
+                            builder.AddAttribute(15, "class", "px-3 mb-3");
+
+                            // Error list
+                            var index = 16;
+                            foreach (var error in validationResults)
+                            {
+                                builder.OpenElement(index++, "div");
+                                builder.AddAttribute(index++, "class", "error-message-item text-dark");
+                                builder.AddContent(index++, error.ErrorMessage ?? "Unknown error");
+                                builder.CloseElement();
+                            }
+
+                            builder.CloseElement(); // content
+
+                            // Footer v?i Bootstrap
+                            builder.OpenElement(index++, "div");
+                            builder.AddAttribute(index++, "class", "d-flex justify-content-end border-top border-danger pt-2 pb-2 px-3");
+                            
+                            builder.OpenElement(index++, "button");
+                            builder.AddAttribute(index++, "class", "btn btn-danger btn-sm");
+                            builder.AddAttribute(index++, "type", "button");
+                            builder.AddContent(index++, "OK");
+                            builder.CloseElement(); // button
+
+                            builder.CloseElement(); // footer
+
+                            builder.CloseElement(); // error-message-box
+                            builder.CloseElement(); // row-header-container
+                        };
+                    }
+                    else
+                    {
+                        // KhÙng cÛ l?i - hi?n th? row number b?nh th˝?ng
+                        return builder =>
+                        {
+                            builder.OpenElement(0, "div");
+                            builder.AddAttribute(1, "class", "row-header-container");
+                            builder.AddContent(2, (range.Row + 1).ToString());
+                            builder.CloseElement();
+                        };
+                    }
+                }
+            }
+
+            return base.GetCellContentRenderFragment(cellType, range);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                // Click icon to toggle message box
+                document.addEventListener('click', function(e) {
+                    var icon = e.target.closest('.error-icon');
+                    if (icon) {
+                        var container = icon.closest('.row-header-container');
+                        var msgBox = container.querySelector('.error-message-box');
+                        
+                        // Close all other message boxes
+                        document.querySelectorAll('.error-message-box.show').forEach(function(box) {
+                            if (box !== msgBox) {
+                                box.classList.remove('show');
+                            }
+                        });
+                        
+                        // Toggle current message box
+                        if (msgBox) {
+                            var isVisible = msgBox.classList.contains('show');
+                            if (isVisible) {
+                                msgBox.classList.remove('show');
+                            } else {
+                                msgBox.classList.add('show');
+                                
+                                // Position message box - c„n m?i tÍn v?i gi?a icon
+                                var positionMsgBox = function() {
+                                    var rect = icon.getBoundingClientRect();
+                                    msgBox.style.position = 'fixed';
+                                    msgBox.style.top = (rect.bottom + 10) + 'px';
+                                    // C„n m?i tÍn (? v? trÌ left: 20px c?a msgBox) v?i gi?a icon
+                                    msgBox.style.left = (rect.left + rect.width / 2 - 31) + 'px';
+                                };
+                                
+                                positionMsgBox();
+                                
+                                // Update position on scroll
+                                var scrollHandler = function() {
+                                    if (msgBox.classList.contains('show')) {
+                                        positionMsgBox();
+                                    } else {
+                                        window.removeEventListener('scroll', scrollHandler, true);
+                                    }
+                                };
+                                
+                                window.addEventListener('scroll', scrollHandler, true);
+                            }
+                        }
+                        
+                        e.stopPropagation();
+                    }
+                });
+                
+                // Click OK button to close
+                document.addEventListener('click', function(e) {
+                    if (e.target.matches('.error-message-box .btn')) {
+                        var msgBox = e.target.closest('.error-message-box');
+                        if (msgBox) {
+                            msgBox.classList.remove('show');
+                        }
+                        e.stopPropagation();
+                    }
+                });
+                
+                // Click outside to close
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.error-icon') && !e.target.closest('.error-message-box')) {
+                        document.querySelectorAll('.error-message-box.show').forEach(function(box) {
+                            box.classList.remove('show');
+                        });
+                    }
+                });
+            ");
+        }
     }
 }

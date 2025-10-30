@@ -4,7 +4,7 @@
 @using System;
 @using C1.Blazor.Input
 <C1DatePicker Value="@DateTime.Today"
-              Format="yyyy-MM-ddgit "
+              Format="yyyy-MM-dd"
               CalendarStyle="@(new C1Style(){ BackgroundColor = C1Color.White})"
               HeaderStyle="@(new C1Style(){Color = "White", BackgroundColor ="#FF3D834B", FontWeight = "100!important"})"
               DayOfWeekStyle="@(new C1Style(){BackgroundColor = "#FF63A646", Height = 27, LineHeight = 27, Color = C1Color.Black})"
@@ -14,7 +14,7 @@
               AdjacentDayStyle="@(new C1Style() {Color = "#FFA5A5A3"})"
               DropDownBehavior="@DropDownBehavior.HeaderTap">
     <CollapsedButtonIcon>
-        <span class="oi oi-calendar" style="color: green"></span>
+        <span class="oi oi-calendar" style="color: green">icon</span>
     </CollapsedButtonIcon>
     <ExpandedButtonIcon>
         <span class="oi oi-calendar" style="color: darkgreen;">
