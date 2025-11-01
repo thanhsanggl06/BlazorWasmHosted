@@ -50,6 +50,21 @@ public class ProductsController : ControllerBase
         }
     }
 
+    [HttpPost("existingValues")]
+    public async Task<ActionResult<ProductDto>> GetExistingValues(List<string> valueChecks)
+    {
+        try
+        {
+            var existingValues = await _productService.GetExistingValue(valueChecks);
+            return Ok(existingValues);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting existing values");
+            return StatusCode(500, "An error occurred while retrieving existing values");
+        }
+    }
+
     [HttpGet("category/{category}")]
     public async Task<ActionResult<List<ProductDto>>> GetByCategory(string category)
     {

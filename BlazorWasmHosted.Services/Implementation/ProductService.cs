@@ -1,4 +1,4 @@
-using BlazorWasmHosted.Data;
+﻿using BlazorWasmHosted.Data;
 using BlazorWasmHosted.Shared.Entities;
 using BlazorWasmHosted.Shared.Models;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +59,33 @@ public class ProductService : IProductService
             product.Supplier!.SupplierName,
             product.UnitPrice * product.Quantity
         );
+    }
+
+    public async Task<List<string>> GetExistingValue(List<string> compositeKeyStrings)
+    {
+        var existingValues = new List<string>();
+        var uniqueKeys = compositeKeyStrings.Distinct().ToList();
+        var batchSize = 1000;
+        string separator = "_";
+
+        foreach (var batch in uniqueKeys.Chunk(batchSize))
+        {
+            var batchSet = batch.ToHashSet();
+
+            // Query DB - nối 2 trường trong DB
+            var existingKeysInBatch = await _context.Products
+                .AsNoTracking()
+                .Where(t => batchSet.Contains(
+                    t.Id.ToString() + separator + t.SupplierId.ToString()
+                ))
+                .Select(t => t.Id.ToString() + separator + t.SupplierId.ToString())
+                .ToListAsync();
+
+            existingValues.AddRange(existingKeysInBatch);
+
+        }
+
+        return existingValues;
     }
 
     public async Task<List<ProductDto>> GetProductsByCategoryAsync(string category)

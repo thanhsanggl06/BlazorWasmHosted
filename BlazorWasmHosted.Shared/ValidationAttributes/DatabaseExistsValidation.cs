@@ -77,6 +77,57 @@ public class CategoryExistsAttribute : DatabaseExistsValidationAttribute<string>
     }
 }
 
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+public class ValueExistsAttribute : DatabaseExistsValidationAttribute<string>
+{
+    protected override string CacheKey => "ExistingValues";
+    protected override string EntityName => "Product";
+
+    public ValueExistsAttribute()
+    {
+        ErrorMessage = "Key không tồn tại trong hệ thống";
+    }
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value == null)
+        {
+            return ValidationResult.Success;
+        }
+
+        var containerObject = validationContext.ObjectInstance;
+        var otherProperty = containerObject.GetType()
+                .GetProperty("Id");
+        object? otherPropertyValue = null;
+
+        if (otherProperty != null)
+        {
+            otherPropertyValue = otherProperty.GetValue(containerObject);
+        }
+        // Check if cache is loaded
+        if (!ValidationStore.IsCacheLoaded(CacheKey))
+        {
+            return new ValidationResult(
+                $"{EntityName} cache chưa được load. Vui lòng load cache trước khi validate.",
+                new[] { validationContext.MemberName ?? string.Empty }
+            );
+        }
+
+
+            if (!ValidationStore.Contains(CacheKey, otherPropertyValue.ToString() + "_" + value.ToString()))
+            {
+
+                return new ValidationResult(
+                    ErrorMessage ?? $"{EntityName} '{otherPropertyValue.ToString() + "_" + value.ToString()}' không tồn tại trong hệ thống",
+                    new[] { validationContext.MemberName ?? string.Empty }
+                );
+            }
+
+        return ValidationResult.Success;
+    }
+
+}
+
 /// <summary>
 /// Validation attribute để kiểm tra Product Code có tồn tại không (cho unique check)
 /// </summary>

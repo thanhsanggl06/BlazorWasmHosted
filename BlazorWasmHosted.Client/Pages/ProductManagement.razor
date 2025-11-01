@@ -34,9 +34,9 @@
     }
 </div>
 
+          @* CellFactory="@errorIconFactory" *@
 <FlexGrid @ref="flexGrid"
           ItemsSource="@collection2"
-          CellFactory="@errorIconFactory"
           IsReadOnly="false"
           AllowSorting="true"
           ShowSort="true"
@@ -170,7 +170,7 @@
         listData = new List<ProductDtoTest>
         {
             new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
-            new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 3 },
+            new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 2 },
             new ProductDtoTest { Id = 3, ProductName = "EF", SupplierId = 2 },
             new ProductDtoTest { Id = 4, ProductName = "GH", SupplierId = 4 },
             new ProductDtoTest { Id = 5, ProductName = "CDD", SupplierId = 5 },
@@ -199,12 +199,18 @@
             {
                 return;
             }
+            var testCompositeKeys = listData.Select(p => $"{p.Id}_{p.SupplierId}").Distinct().ToList();
+            var httpResponse = await Http.PostAsJsonAsync("api/products/existingValues", testCompositeKeys);
+            var compositeKeys = await httpResponse.Content.ReadFromJsonAsync<List<string>>();
+
 
             var startTime = DateTime.Now;
 
             // 2. ? LUÔN dùng MultiValidationScope (k? c? khi ch? 1 cache)
             using (var scope = new MultiValidationScope(autoClearOnDispose: true)
-                .LoadCache("SupplierIds", supplierIds))
+                .LoadCache("SupplierIds", supplierIds)
+                .LoadCache("ExistingValues", compositeKeys ?? new List<string>())
+            )
             {
                 var errors = scope.ValidateList(listData);
 

@@ -50,7 +50,7 @@ public class ProductDtoTest :  ObservableValidator
     public int Id
     {
         get => this.id;
-        set => SetProperty(ref this.id, value, true);
+        set => SetProperty(ref this.id, value, false);
     }
 
     [Required(ErrorMessage = "Tên không được để trống")]
@@ -60,11 +60,12 @@ public class ProductDtoTest :  ObservableValidator
     private int supplierId;
 
     [SupplierExists(ErrorMessage = "Supplier ID không tồn tại trong hệ thống")]
+    [ValueExists(ErrorMessage = "Id_SupplierID không tồn tại trong hệ thống")]
     [CustomValidation(typeof(ProductDtoTest), nameof(ValidatePrimaryKey))]
     public int SupplierId
     {
         get => this.supplierId;
-        set => SetProperty(ref this.supplierId, value, true);
+        set => SetProperty(ref this.supplierId, value, false);
     }
 
 
