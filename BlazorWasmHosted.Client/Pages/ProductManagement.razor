@@ -1,4 +1,4 @@
-@page "/products-review"
+ï»¿@page "/products-review"
 @using C1.Blazor.Grid
 @using C1.Blazor.Core
 @using C1.DataCollection
@@ -18,6 +18,9 @@
     </button>
     <button class="btn btn-secondary ms-2" @onclick="ReloadData">
         <i class="bi bi-arrow-clockwise"></i> Reload
+    </button>
+    <button class="btn btn-secondary ms-2" @onclick="TestConvertError">
+        <i class="bi bi-arrow-clockwise"></i> Test
     </button>
     
     @if (ValidationStore.IsCacheLoaded("SupplierIds"))
@@ -96,7 +99,7 @@
         display: block;
     }
 
-    /* M?i tên tr? lên */
+    /* M?i tÃªn tr? lÃªn */
     .error-message-box::before {
         content: '';
         position: absolute;
@@ -133,7 +136,7 @@
     }
 
     .error-message-item:before {
-        content: "•";
+        content: "â€¢";
         position: absolute;
         left: 0.375rem;
         top: 0.5rem;
@@ -206,7 +209,7 @@
 
             var startTime = DateTime.Now;
 
-            // 2. ? LUÔN dùng MultiValidationScope (k? c? khi ch? 1 cache)
+            // 2. ? LUÃ”N dÃ¹ng MultiValidationScope (k? c? khi ch? 1 cache)
             using (var scope = new MultiValidationScope(autoClearOnDispose: true)
                 .LoadCache("SupplierIds", supplierIds)
                 .LoadCache("ExistingValues", compositeKeys ?? new List<string>())
@@ -214,7 +217,7 @@
             {
                 var errors = scope.ValidateList(listData);
 
-                // 3. G?i Validate() cho t?ng item ð? FlexGrid detect errors
+                // 3. G?i Validate() cho t?ng item Ä‘? FlexGrid detect errors
                 foreach (var item in listData)
                 {
                     item.Validate();
@@ -225,6 +228,7 @@
             }
             // Auto-cleared ?
 
+
             // Refresh grid
             await InvokeAsync(StateHasChanged);
         }
@@ -232,6 +236,59 @@
         {
             Console.WriteLine($"Validation error: {ex.Message}");
         }
+    }
+
+    // Dictionary[itemIndex][propertyName] = List<errorMessages>
+    public Dictionary<int, Dictionary<string, List<string>>> GetErrorsByIndexAndProperty(List<ProductDtoTest> items)
+    {
+        var result = new Dictionary<int, Dictionary<string, List<string>>>();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+
+            if (item.HasErrors)
+            {
+                // Táº¡o dictionary cho item nÃ y
+                var itemErrors = new Dictionary<string, List<string>>();
+
+                foreach (var validationResult in item.GetErrors())
+                {
+                    foreach (var propertyName in validationResult.MemberNames)
+                    {
+                        // Náº¿u property chÆ°a cÃ³ thÃ¬ táº¡o má»›i
+                        if (!itemErrors.ContainsKey(propertyName))
+                        {
+                            itemErrors[propertyName] = new List<string>();
+                        }
+
+                        // ThÃªm error message
+                        itemErrors[propertyName].Add(validationResult.ErrorMessage);
+                    }
+                }
+
+                // LÆ°u vÃ o result vá»›i key lÃ  index
+                result[i] = itemErrors;
+            }
+        }
+
+        return result;
+    }
+
+    public List<string> GetAllErrorMessages(Dictionary<int, Dictionary<string, List<string>>> errors)
+    {
+        return errors
+            .SelectMany(item => item.Value)
+            .SelectMany(prop => prop.Value)
+            .ToList();
+    }
+
+    private void TestConvertError()
+    {
+        var lsErrors = GetErrorsByIndexAndProperty(listData);
+        var allErrors = GetAllErrorMessages(lsErrors);
+        JSRuntime.InvokeVoidAsync("console.log", lsErrors);
+        JSRuntime.InvokeVoidAsync("console.log", allErrors);
     }
 
     private async Task ReloadData()
@@ -257,7 +314,7 @@
                     var validationResults = new List<ValidationResult>();
                     Validator.TryValidateObject(item, validationContext, validationResults, true);
 
-                    // CH? render khi có l?i
+                    // CH? render khi cÃ³ l?i
                     if (validationResults.Any())
                     {
                         return builder =>
@@ -272,7 +329,7 @@
                             builder.OpenElement(2, "div");
                             builder.AddAttribute(3, "class", "error-icon");
                             builder.AddAttribute(4, "id", iconId);
-                            builder.AddAttribute(5, "title", $"{validationResults.Count} l?i - Click ð? xem chi ti?t");
+                            builder.AddAttribute(5, "title", $"{validationResults.Count} l?i - Click Ä‘? xem chi ti?t");
 
                             // SVG Error Icon
                             builder.AddMarkupContent(6, 
@@ -331,7 +388,7 @@
                     }
                     else
                     {
-                        // Không có l?i - hi?n th? row number b?nh thý?ng
+                        // KhÃ´ng cÃ³ l?i - hi?n th? row number b?nh thÆ°?ng
                         return builder =>
                         {
                             builder.OpenElement(0, "div");
@@ -374,12 +431,12 @@
                             } else {
                                 msgBox.classList.add('show');
                                 
-                                // Position message box - cãn m?i tên v?i gi?a icon
+                                // Position message box - cÄƒn m?i tÃªn v?i gi?a icon
                                 var positionMsgBox = function() {
                                     var rect = icon.getBoundingClientRect();
                                     msgBox.style.position = 'fixed';
                                     msgBox.style.top = (rect.bottom + 10) + 'px';
-                                    // Cãn m?i tên (? v? trí left: 20px c?a msgBox) v?i gi?a icon
+                                    // CÄƒn m?i tÃªn (? v? trÃ­ left: 20px c?a msgBox) v?i gi?a icon
                                     msgBox.style.left = (rect.left + rect.width / 2 - 31) + 'px';
                                 };
                                 
