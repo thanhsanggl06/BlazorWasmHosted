@@ -148,4 +148,40 @@ public class SupplierService : ISupplierService
 
         return true;
     }
+
+    public async Task<List<ProductDto>> GetSupplierWithProducts()
+    {
+        // LEFT JOIN using LINQ query syntax
+        var query = from supplier in _context.Suppliers
+                    join product in _context.Products
+                    on supplier.Id equals product.SupplierId into supplierProducts
+                    from product in supplierProducts.DefaultIfEmpty()
+                    where supplier.IsActive == true
+                    select new { supplier, product };
+
+        // Get the generated SQL query (for debugging)
+        var queryString = query.ToQueryString();
+
+        // Execute query and map to ProductDto
+        var results = await query
+            .Where(sp => sp.product != null) // Only include records where product exists
+            .Select(sp => new ProductDto(
+                sp.product.Id,
+                sp.product.ProductCode,
+                sp.product.ProductName,
+                sp.product.Category,
+                sp.product.UnitPrice,
+                sp.product.Quantity,
+                sp.product.InStock,
+                sp.product.Description,
+                sp.product.CreatedAt,
+                sp.product.UpdatedAt,
+                sp.product.SupplierId,
+                sp.supplier.SupplierName,
+                sp.product.UnitPrice * sp.product.Quantity // TotalValue
+            ))
+            .ToListAsync();
+
+        return results;
+    }
 }

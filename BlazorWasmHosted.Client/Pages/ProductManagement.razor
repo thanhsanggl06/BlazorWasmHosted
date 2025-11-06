@@ -169,6 +169,8 @@
 
     private async Task LoadProducts()
     {
+        var test = await Http.GetFromJsonAsync<List<ProductDto>>("api/suppliers/test");
+
         // Test data v?i m?t s? items invalid
         listData = new List<ProductDtoTest>
         {

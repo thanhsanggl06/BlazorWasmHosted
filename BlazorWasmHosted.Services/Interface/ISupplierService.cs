@@ -9,4 +9,5 @@ public interface ISupplierService
     Task<SupplierDto> CreateSupplierAsync(CreateSupplierRequest request);
     Task<SupplierDto?> UpdateSupplierAsync(int id, UpdateSupplierRequest request);
     Task<bool> DeleteSupplierAsync(int id);
+    Task<List<ProductDto>> GetSupplierWithProducts();
 }

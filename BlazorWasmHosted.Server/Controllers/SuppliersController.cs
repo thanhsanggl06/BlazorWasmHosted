@@ -66,6 +66,23 @@ public class SuppliersController : ControllerBase
         }
     }
 
+    [HttpGet("test")]
+    public async Task<ActionResult<List<ProductDto>>> GetSupplierWithProducts()
+    {
+        try
+        {
+            var products = await _supplierService.GetSupplierWithProducts();
+            if (products == null)
+                return NotFound();
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An error occurred while retrieving the supplier");
+        }
+    }
+
     [HttpPost]
     public async Task<ActionResult<SupplierDto>> Create(CreateSupplierRequest request)
     {
