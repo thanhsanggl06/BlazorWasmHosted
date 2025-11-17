@@ -1,6 +1,8 @@
 using BlazorWasmHosted.Services;
 using BlazorWasmHosted.Shared.Models;
+using BlazorWasmHosted.Shared.ValidationAttributes;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.WebRequestMethods;
 
 namespace BlazorWasmHosted.Server.Controllers;
 
@@ -18,12 +20,29 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ProductDto>>> GetAll()
+    public async Task<ActionResult<List<ProductDtoTest>>> GetAll()
     {
         try
         {
+            var listData = new List<ProductDtoTest>
+            {
+                new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
+                new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 2 },
+                new ProductDtoTest { Id = 3, ProductName = "EF", SupplierId = 2 },
+                new ProductDtoTest { Id = 4, ProductName = "GH", SupplierId = 4 },
+                new ProductDtoTest { Id = 5, ProductName = "CDD", SupplierId = 5 },
+                new ProductDtoTest { Id = 6, ProductName = "", SupplierId = 6 },        // Invalid: empty name
+                new ProductDtoTest { Id = 7, ProductName = "X", SupplierId = 999 },     // Invalid: short name + invalid supplier
+                new ProductDtoTest { Id = 8, ProductName = "Product 8", SupplierId = 888 }, // Invalid: invalid supplier
+            };
+
+            foreach (var item in listData)
+            {
+                item.Validate();
+            }
+
             var products = await _productService.GetAllProductsAsync();
-            return Ok(products);
+            return Ok(listData);
         }
         catch (Exception ex)
         {

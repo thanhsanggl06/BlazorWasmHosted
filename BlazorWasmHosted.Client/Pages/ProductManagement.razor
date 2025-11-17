@@ -10,7 +10,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
-<h3>Product Management v?i Validation</h3>
+<h3>Product Management với Validation</h3>
 
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="ValidateAllProducts">
@@ -22,17 +22,23 @@
     <button class="btn btn-secondary ms-2" @onclick="TestConvertError">
         <i class="bi bi-arrow-clockwise"></i> Test
     </button>
+    <button class="btn btn-warning ms-2" @onclick="TestSetErrors">
+        <i class="bi bi-bug"></i> Test SetErrors (Inject)
+    </button>
+    <button class="btn btn-info ms-2" @onclick="TestClearErrors">
+        <i class="bi bi-eraser"></i> Clear Errors
+    </button>
     
     @if (ValidationStore.IsCacheLoaded("SupplierIds"))
     {
         <span class="ms-3 badge bg-success">
-            ? Cache Loaded (@ValidationStore.GetCacheCount("SupplierIds") suppliers)
+            ✓ Cache Loaded (@ValidationStore.GetCacheCount("SupplierIds") suppliers)
         </span>
     }
     else
     {
         <span class="ms-3 badge bg-warning">
-            ?? Cache not loaded
+            ⚠ Cache not loaded
         </span>
     }
 </div>
@@ -171,18 +177,22 @@
     {
         var test = await Http.GetFromJsonAsync<List<ProductDto>>("api/suppliers/test");
 
+        var listData1 = await Http.GetFromJsonAsync<List<ProductDtoTest>>("api/products");
+
+        listData = listData1 ?? new List<ProductDtoTest>();
+
         // Test data v?i m?t s? items invalid
-        listData = new List<ProductDtoTest>
-        {
-            new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
-            new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 2 },
-            new ProductDtoTest { Id = 3, ProductName = "EF", SupplierId = 2 },
-            new ProductDtoTest { Id = 4, ProductName = "GH", SupplierId = 4 },
-            new ProductDtoTest { Id = 5, ProductName = "CDD", SupplierId = 5 },
-            new ProductDtoTest { Id = 6, ProductName = "", SupplierId = 6 },        // Invalid: empty name
-            new ProductDtoTest { Id = 7, ProductName = "X", SupplierId = 999 },     // Invalid: short name + invalid supplier
-            new ProductDtoTest { Id = 8, ProductName = "Product 8", SupplierId = 888 }, // Invalid: invalid supplier
-        };
+        // listData = new List<ProductDtoTest>
+        // {
+        //     new ProductDtoTest { Id = 1, ProductName = "AB", SupplierId = 1 },
+        //     new ProductDtoTest { Id = 2, ProductName = "CD", SupplierId = 2 },
+        //     new ProductDtoTest { Id = 3, ProductName = "EF", SupplierId = 2 },
+        //     new ProductDtoTest { Id = 4, ProductName = "GH", SupplierId = 4 },
+        //     new ProductDtoTest { Id = 5, ProductName = "CDD", SupplierId = 5 },
+        //     new ProductDtoTest { Id = 6, ProductName = "", SupplierId = 6 },        // Invalid: empty name
+        //     new ProductDtoTest { Id = 7, ProductName = "X", SupplierId = 999 },     // Invalid: short name + invalid supplier
+        //     new ProductDtoTest { Id = 8, ProductName = "Product 8", SupplierId = 888 }, // Invalid: invalid supplier
+        // };
 
         baseCollection = new C1DataCollection<ProductDtoTest>(listData);
         collection2 = new C1PagedDataCollection<ProductDtoTest>(baseCollection)
@@ -191,7 +201,7 @@
         };
 
         // Auto-validate on load
-        await ValidateAllProducts();
+        // await ValidateAllProducts();
     }
 
     private async Task ValidateAllProducts()
@@ -291,6 +301,102 @@
         var allErrors = GetAllErrorMessages(lsErrors);
         JSRuntime.InvokeVoidAsync("console.log", lsErrors);
         JSRuntime.InvokeVoidAsync("console.log", allErrors);
+    }
+
+    /// <summary>
+    /// Test SetErrors - Inject validation errors from server (simulated)
+    /// </summary>
+    private async Task TestSetErrors()
+    {
+        try
+        {
+            Console.WriteLine("=== TEST INJECT ERRORS ===");
+            
+            if (!listData.Any())
+            {
+                Console.WriteLine("No data to test");
+                return;
+            }
+
+            // Simulate server errors for first 3 products
+            for (int i = 0; i < Math.Min(3, listData.Count); i++)
+            {
+                var product = listData[i];
+                
+                // Create simulated server validation errors
+                var serverErrors = new Dictionary<string, List<string>>();
+                
+                // Error for Id (private field)
+                serverErrors["Id"] = new List<string> 
+                { 
+                    $"[SERVER] ID {product.Id} không hợp lệ",
+                    $"[SERVER] ID {product.Id} đã tồn tại trong database"
+                };
+                
+                // Error for SupplierId (private field)
+                serverErrors["SupplierId"] = new List<string> 
+                { 
+                    $"[SERVER] Supplier ID {product.SupplierId} không tồn tại",
+                    $"[SERVER] Supplier ID {product.SupplierId} đã bị khóa"
+                };
+                
+                // Error for ProductName (public property)
+                serverErrors["ProductName"] = new List<string> 
+                { 
+                    "[SERVER] Tên sản phẩm đã tồn tại trong hệ thống",
+                    "[SERVER] Tên sản phẩm không được chứa ký tự đặc biệt"
+                };
+                
+                // INJECT ERRORS - CHỈ CẦN 1 DÒNG!
+                product.SetErrors(serverErrors);
+                
+                Console.WriteLine($"Product {i}: Injected {serverErrors.Count} properties with errors");
+                Console.WriteLine($"  - HasErrors: {product.HasErrors}");
+                Console.WriteLine($"  - Id errors: {string.Join(", ", product.GetErrors("Id").Cast<string>())}");
+                Console.WriteLine($"  - SupplierId errors: {string.Join(", ", product.GetErrors("SupplierId").Cast<string>())}");
+            }
+
+            Console.WriteLine($"\n✅ Injected errors to {Math.Min(3, listData.Count)} products");
+            Console.WriteLine("Check console for details. FlexGrid should auto-update!");
+            
+            // Refresh UI
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error during test: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+        }
+    }
+
+    /// <summary>
+    /// Test Clear Errors
+    /// </summary>
+    private async Task TestClearErrors()
+    {
+        try
+        {
+            Console.WriteLine("=== TEST CLEAR ERRORS ===");
+            
+            int clearedCount = 0;
+            foreach (var product in listData)
+            {
+                if (product.HasErrors)
+                {
+                    product.ClearAllErrors();
+                    clearedCount++;
+                }
+            }
+            
+            Console.WriteLine($"✅ Cleared errors from {clearedCount} products");
+            
+            // Refresh UI
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error: {ex.Message}");
+        }
     }
 
     private async Task ReloadData()
